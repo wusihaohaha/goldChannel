@@ -258,7 +258,9 @@ input{
 	background-size: 0.8rem;
 	background-position-x: 9.3rem;
 }
-.iconpic span{color: #616161;}
+.iconpic span{color:  #616161;}
+.iconpic a{color: rgb(0, 0, 0);}
+.iconpic label{color:rgb(0, 0, 0);}
 
 
 
