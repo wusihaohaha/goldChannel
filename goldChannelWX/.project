@@ -30,6 +30,8 @@
 			<arguments>
 			</arguments>
 		</buildCommand>
+		<buildCommand>
+		</buildCommand>
 	</buildSpec>
 	<natures>
 		<nature>org.eclipse.jem.workbench.JavaEMFNature</nature>
