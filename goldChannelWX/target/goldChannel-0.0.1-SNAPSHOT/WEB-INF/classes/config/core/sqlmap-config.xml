@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMapConfig PUBLIC "-//ibatis.apache.org//DTD SQL Map Config 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-config-2.dtd">
+<sqlMapConfig>
+	<settings cacheModelsEnabled="true" lazyLoadingEnabled="true"
+		enhancementEnabled="true" useStatementNamespaces="true" />
+	<!-- 用户信息 -->
+	<sqlMap resource="com/golden/login/po/UserBean.ibatis.xml"/>
+	<!-- 图片存储根路径 -->
+	<sqlMap resource="com/golden/pubParameter/po/pubParameter.ibaits.xml"/>
+	<!-- 查询接口 -->
+	<sqlMap resource="com/golden/search/po/SearchInfo.ibatis.xml"/>
+	<!-- 船只接口 -->
+ 	<sqlMap resource="com/golden/ship/po/Ship.ibaits.xml"/>
+	<!-- 货物管理 -->
+	<sqlMap resource="com/golden/goods/po/GoodsInfo.ibatis.xml"/>
+	<!-- 修理报修 -->
+	<sqlMap resource="com/golden/repair/po/Repair.ibatis.xml"/>
+	<!-- 招聘 -->
+	<sqlMap resource="com/golden/advertise/po/Advertise.ibatis.xml"/> 
+	<!-- 订单接口 -->
+	<sqlMap resource="com/golden/order/po/OrderInfo.ibatis.xml"/>
+	<!-- 个人中心接口 -->
+ 	<sqlMap resource="com/golden/personal/po/Personal.ibatis.xml"/>
+ 	<!-- 资讯 -->
+ 	<sqlMap resource="com/golden/typenews/po/Information.ibatis.xml"/>
+ 	<!--交易接口  -->
+ 	<sqlMap resource="com/golden/transaction/po/transaction.ibatis.xml"/>
+</sqlMapConfig>

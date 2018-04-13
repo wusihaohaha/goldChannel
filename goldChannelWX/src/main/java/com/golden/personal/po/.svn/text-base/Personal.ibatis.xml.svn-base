@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="PersonalSqlMap">
+	<typeAlias alias="MessageInfo" type="com.golden.personal.po.MessageInfo" />
+	<typeAlias alias="BillInfo" type="com.golden.personal.po.BillInfo" />
+	<typeAlias alias="UserBean" type="com.golden.login.po.UserBean" />
+	
+	<!-- 创建消息 -->
+	<insert id="createMessageInfo" parameterClass="MessageInfo">
+		insert into HJSD_MESSAGE_INFO (RECEIVEUSER,TITLE,MESSAGETYPE,MESSAGECONTENT,CREATETIME,STATUS)
+		values(#receiveUser#,#title#,#messageType#,#messageContent#,sysdate,#status#)
+	</insert>
+	
+	<!-- 创建消息（订单支付）-->
+	<insert id="createOrderPayMessageInfo" parameterClass="java.util.Map">
+		insert into HJSD_MESSAGE_INFO (RECEIVEUSER,TITLE,MESSAGETYPE,MESSAGECONTENT,CREATETIME,STATUS)
+		select SHIPUSER as RECEIVEUSER,#title# as TITLE,#messageType# as MESSAGETYPE,#messageContent# as MESSAGECONTENT,sysdate as CREATETIME,
+		 #status# as STATUS from HJSD_SHIPPINGORDER_INFO where ORDERID=#orderId#
+	</insert>
+
+	<!-- 通过id删除消息 -->
+	<delete id="deleteMessageById" parameterClass="java.lang.String">
+		delete from HJSD_MESSAGE_INFO where MESSAGEID=#messageId#
+	</delete>
+	
+	<!-- 查询我的消息列表 -->
+	<select id="selectMessageInfo" parameterClass="java.util.Map" resultClass="MessageInfo">
+		select * from ( select temp.*,ROWNUM as rn from (
+			select MESSAGEID,TITLE,MESSAGETYPE,MESSAGECONTENT,to_char(CREATETIME,'yyyy-mm-dd hh24:mm') as CREATETIME,STATUS from HJSD_MESSAGE_INFO where MESSAGETYPE=#type#
+			and (RECEIVEUSER=#userId# or RECEIVEUSER is null)
+			and <![CDATA[CREATETIME>=(select CREATETIME from HJSD_USER_INFO where USERID=#userId#)]]>
+			order by HJSD_MESSAGE_INFO.CREATETIME desc
+		<![CDATA[ ) temp ) where rn >= #rowMin# and rn <= #rowMax#]]>
+	</select>
+	
+	<!-- 查询未读消息条数 -->
+	<select id="selectUnreadMessageCount" parameterClass="java.util.Map" resultClass="java.lang.Integer">
+		select count(1) from HJSD_MESSAGE_INFO where RECEIVEUSER=#userId# and STATUS=#status#
+	</select>
+	
+	<!-- 修改消息状态 -->
+	<update id="updateMessagestatus" parameterClass="java.util.Map">
+		update HJSD_MESSAGE_INFO set STATUS=#read# where RECEIVEUSER=#userId# and MESSAGETYPE=#type# and STATUS=#unread# 
+	</update>
+	
+	<!-- 查询我的账单列表 -->
+<!-- 	<select id="selectMyBillInfo" parameterClass="java.util.Map" resultClass="BillInfo">
+		select * from ( select temp.*,ROWNUM as rn from (
+			select 1 as type,TRADEID,to_char(CREATETIME,'yyyy-mm') as month,decode(TRADETYPE,1,TRADEAMOUNT*-1,TRADEAMOUNT) as TRADEAMOUNT,to_char(CREATETIME,'yyyy-mm-dd')as CREATETIME,PAYMENTEXPLAIN 
+			from HJSD_PAYMENTTRADE_INFO where USERID=#userId#
+			UNION all 
+			select 2 as type,null as TRADEID,to_char(CREATETIME,'yyyy-mm') as month,sum(decode(TRADETYPE,1,TRADEAMOUNT*-1,TRADEAMOUNT)) as TRADEAMOUNT,to_char(CREATETIME,'yyyy-mm') as CREATETIME, 
+			'本月总消费' as PAYMENTEXPLAIN from HJSD_PAYMENTTRADE_INFO 
+			where USERID=#userId# group by to_char(CREATETIME,'yyyy-mm') 
+			order by month desc,type desc,CREATETIME desc
+		<![CDATA[ ) temp ) where rn >= #rowMin# and rn <= #rowMax#]]>
+	</select> -->
+	
+	<select id="selectMyBillInfo" parameterClass="java.util.Map" resultClass="BillInfo">
+		select * from ( select temp.*,ROWNUM as rn from (
+			select TRADEID,
+			case round(SYSDATE-(TO_DATE(To_char(CREATETIME , 'YYYY-MM-DD'), 'YYYY-MM-DD'))) when 1 then '今天' when 2 then '昨天' else 
+			decode(to_char(CREATETIME,'d'),'1','周日','2','周一','3','周二','4','周三','5','周四','6','周五','7','周六')end as time1, 
+			case round(SYSDATE-(TO_DATE(To_char(CREATETIME , 'YYYY-MM-DD'), 'YYYY-MM-DD'))) when 1 then to_char(CREATETIME,'hh24:mm') 
+			when 2 then to_char(CREATETIME,'hh24:mm') else to_char(CREATETIME,'MM-DD') end as time2, 
+			decode(TRADETYPE,1,'-'||RTRIM(to_char(TRADEAMOUNT,'fm999999999999990.99'),'.') ,'+'||RTRIM(to_char(TRADEAMOUNT,'fm999999999999990.99'),'.')) as TRADEAMOUNT, 
+			PAYMENTEXPLAIN 
+		from HJSD_PAYMENTTRADE_INFO where USERID=#userId# 
+		order by CREATETIME desc 
+		<![CDATA[ ) temp ) where rn >= #rowMin# and rn <= #rowMax#]]>
+	</select>
+
+	<!-- 更新我的账户 -->
+	<update id="updateMyAccount" parameterClass="UserBean" >
+		update HJSD_USER_INFO set 
+		<isNotEmpty property="alipayAccount">
+			ALIPAYACCOUNT=#alipayAccount#,
+			ALIPAYNAME=#alipayName#
+		</isNotEmpty>
+		<isNotEmpty property="weChatAccount">
+			WECHATACCOUNT=#weChatAccount#,
+			WECHATNAME= #weChatName#
+		</isNotEmpty>
+		where USERID=#userid#
+	</update>
+	
+	<!-- 查询我的账户 -->
+	<select id="selectMyAccount" parameterClass="java.lang.String" resultClass="UserBean">
+		select USERID,ALIPAYACCOUNT,ALIPAYNAME,WECHATACCOUNT,WECHATNAME from HJSD_USER_INFO where USERID=#userId#
+	</select>
+	
+	<!-- 创建消息（船运：货方取消、船方拒绝）-->
+	<insert id="insertMessageByShipApplyId" parameterClass="java.util.Map">
+		select decode(#role#,#roleGoods#,apply.SHIPOWNER,apply.APPLYUSER)as RECEIVEUSER,#title# as TITLE,#messageType# as MESSAGETYPE,
+			REPLACE(REPLACE(#message#,'[0]',users.USERNAME),'[1]',ship.SHIPNAME) as MESSAGECONTENT,sysdate as CREATETIME,#status# as STATUS
+			from HJSD_SHIPAPPLY_INFO apply 
+			<isEqual property="role" compareProperty="roleGoods">
+				left outer join HJSD_USER_INFO users on users.USERID=apply.APPLYUSER
+			</isEqual>
+			<isNotEqual property="role" compareProperty="roleGoods">
+				left outer join HJSD_USER_INFO users on users.USERID=apply.SHIPOWNER
+			</isNotEqual>
+			left outer join HJSD_SHIP_INFO ship on ship.SHIPID=apply.SHIPID
+		where apply.SHIPAPPLYID=#shipApplyId#
+	</insert>
+
+	<!-- 账户解绑 -->
+	<update id="deleteMyAccount" parameterClass="java.util.Map">
+		update HJSD_USER_INFO set 
+		<isEqual property="type" compareValue="1">
+			ALIPAYACCOUNT='',
+			ALIPAYNAME=''
+		</isEqual>
+		<isEqual property="type" compareValue="2">
+			WECHATACCOUNT='',
+			WECHATNAME= ''
+		</isEqual>
+		where USERID=#userId#
+	</update>
+
+</sqlMap>

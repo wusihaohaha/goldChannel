@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="TransactionSqlMap">
+	<!-- <typeAlias alias="UserBean" type="com.golden.user.po.UserBean" /> -->
+	<typeAlias alias="TransactionInfo" type="com.golden.transaction.po.Transaction" />
+	
+    <resultMap id="TransactionInfoResult" class="TransactionInfo">   
+	   <result property="tradeId" column="tradeId"/>   
+	   <result property="orderId" column="orderId"/>   
+	   <result property="goodsSourceId" column="goodsSourceId"/>
+	   <result property="goodsBidId" column="goodsBidId"/>
+	   <result property="tradeNo" column="tradeNo"/>
+	   <result property="tradeType" column="tradeType"/>
+	   <result property="tradeAccount" column="tradeAccount"/>
+	   <result property="tradeAmount" column="tradeAmount"/>
+	   <result property="amountType" column="amountType"/>
+	   <result property="createTime" column="createTime"/>
+	   <result property="paymentExplain" column="paymentExplain"/>
+	   <result property="userId" column="userId"/>
+	<!--    <result property="userInfo" column="userId" select="TransactionSqlMap.getUserInfoById"/> -->
+	</resultMap>
+	
+	
+	<!--通过ID查询用户信息 -->
+	<select id="getUserInfoById" parameterClass="java.lang.String" resultClass="UserBean">
+		select *
+		from hjsd_user_info
+		where userid=#value#
+	</select>
+	
+	<!-- 生成交易信息 -->
+	<insert id="createTransaction" parameterClass="java.util.Map">
+		insert into HJSD_PAYMENTTRADE_INFO (
+			orderId,
+			goodsBidId,
+			tradeNo,
+			tradeType,
+			tradeAccount,
+			tradeAmount,
+			amountType,
+			createTime,
+			paymentExplain,
+			userId
+		) values(
+			#orderId#,
+			#goodsBidId#,
+			#tradeNo#,
+			#tradeType#,
+			#tradeAccount#,
+			#tradeAmount#,
+			#amountType#,
+			sysdate,
+			#paymentExplain#,
+			#userId#
+		)
+	</insert>
+</sqlMap>

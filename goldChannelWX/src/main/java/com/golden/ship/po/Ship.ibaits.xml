@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="Ship">
+<typeAlias alias="Ship" type="com.golden.ship.po.Ship" />
+<typeAlias alias="ShipApply" type="com.golden.ship.po.ApplyShipping" />
+
+	<!-- 添加船舶基本信息-->
+	<insert id="addShips" parameterClass="Ship">
+		insert into hjsd_ship_info
+		   (SHIPNAME,
+		    TONNAGE,
+			SHIPTYPE,
+			SHIPLONG,
+			SHIPWIDTH,
+			SHIPCAPACITY,
+			DRAUGHT,
+			HATCHNUMBER,
+			REGISTRYPORT,
+			HULLINSURANCE,
+			PICTUREPATH,
+			BUSINESSCERTIFICATE,
+			AIRWORTHINESSCERTIFICATE,
+			INTERNATIONALCERTIFICATE,
+			CURRENTPROVINCE,
+			CURRENTCITY,
+			CURRENTPORT,
+			CREATEUSER,
+			PUBLISHTIME,
+			AUDITSTATE,
+			STATUS)
+		values
+		   (#shipname#,
+			#tonnage#,
+			#shiptype#,
+			#shiplong#,
+			#shipwidth#,
+			#shipcapacity#,
+			#draught#,
+			#hatchnumber#,
+			#registryport#,
+			#hullInsurance#,
+			#picturepath#,
+			#businesscertificate#,
+			#airworthinesscertificate#,
+			#internationalcertificate#,
+			#currentprovince#,
+			#currentcity#,
+			#currentport#,
+			#createuser#,
+			sysdate,
+			1,
+			1 )
+	</insert>
+	
+	<!-- 查询我的船舶列表 -->
+	<select id="queryMyshipList"  parameterClass="java.util.Map"  resultClass="hashmap" >
+		select id,shipname,tonnage,shiptype,
+			currentport,auditstate,time
+		from
+			(select rownum rn,t.*
+			from
+				(select id,shipname,tonnage,shiptype,
+					to_char(s_time,'yyyy-mm-dd')||' ~ '||to_char(e_time,'yyyy-mm-dd')||'可载货' as time, currentport,auditstate
+				from wx_ship_info
+				where 1=1
+					and createuser=#createuser#
+					order by auditstate,publishtime desc
+				) t
+			)
+		<![CDATA[ where rn>=#beginIndex# and rn<=#endIndex# ]]>
+	</select>
+	
+	<!-- 查询地方船舶列表 -->
+	<select id="findShiponRound" parameterClass="java.util.Map"  resultClass="hashmap">
+		select id,tonnage,name,
+			shipstatus,AVATAR
+      	from
+			(select rownum rn,t.* from
+				(select ship.id,'可装'||ship.tonnage||'吨' as tonnage,
+					to_char(ship.s_time,'yyyy-mm-dd')||'在'||ship.currentport||'空船' as shipstatus,t1.name,t1.AVATAR
+				from wx_ship_info ship left join WX_USER t1 on t1.openid= ship.CREATEUSER
+				where 1=1
+				<dynamic>
+ 					<isNotEmpty property="currentPort" prepend="AND">
+   			 			ship.currentPort like '%'||#currentPort#||'%'
+  					</isNotEmpty>
+  				</dynamic>
+  					and ship.tonnage between #topton# and #downton#
+    				and ship.auditstate=#auditstate#
+    				order by ship.publishtime desc) t )
+    				where 1=1
+    				and
+			 <![CDATA[ 
+				rn >= #beginIndex# and rn <= #endIndex#
+	 		 ]]>
+	</select>
+	
+	<!-- 修改船舶信息 -->
+	<update id="updateShipinfoByid" parameterClass="Ship">
+		update hjsd_ship_info set
+		    SHIPNAME=#shipname#,
+		    TONNAGE=#tonnage#,
+			SHIPTYPE=#shiptype#,
+			SHIPLONG=#shiplong#,
+			SHIPWIDTH=#shipwidth#,
+			SHIPCAPACITY=#shipcapacity#,
+			DRAUGHT=#draught#,
+			HATCHNUMBER=#hatchnumber#,
+			REGISTRYPORT=#registryport#,
+			HULLINSURANCE=#hullInsurance#,
+			<isNotEmpty property="picturepath">
+				PICTUREPATH=#picturepath#,
+			</isNotEmpty>
+			<isNotEmpty property="businesscertificate">
+				BUSINESSCERTIFICATE=#businesscertificate#,
+			</isNotEmpty>
+			<isNotEmpty property="airworthinesscertificate">
+				AIRWORTHINESSCERTIFICATE=#airworthinesscertificate#,
+			</isNotEmpty>
+			<isNotEmpty property="internationalcertificate">
+				INTERNATIONALCERTIFICATE=#internationalcertificate#,
+			</isNotEmpty>
+			CURRENTPROVINCE=#currentprovince#,
+			CURRENTCITY=#currentcity#,
+			CURRENTPORT=#currentport#,
+			PUBLISHTIME=sysdate,
+			AUDITSTATE=1
+		where SHIPID=#shipid#
+	</update>
+	
+	<!-- 补全货物信息 -->
+	<update id="updateGoodsInfo" parameterClass="java.util.Map">
+		update hjsd_goodssource_info
+			set paytype =#paytype#,thefirstpayment=#thefirstpayment# ,status=#status#,freightprice=trunc(#freightprice#,2),goodsweight=trunc(#goodsweight#,2)
+		where goodssourceid=#goodssourceid#
+	</update>
+	
+	<!-- 添加申请船运记录 -->
+	<insert id="addApplyShipping" parameterClass="java.util.Map">
+		insert into hjsd_shipapply_info
+			(shipid,goodssourceid,status,shipowner,applyuser,applytime)
+			values(#shipid#,#goodssourceid#,#status#,#shipowner#,#applyuser#,sysdate)
+	</insert>
+	
+		<!-- 添加船运申请消息 -->
+	<insert id="addMessageInfo" parameterClass="java.util.Map">
+		insert into hjsd_message_info
+			(receiveuser,title,messagetype,messagecontent,createtime,status)
+		select #shipowner#,#title#,#messagetype#,replace(replace(#content#,'[0]', max(USERNAME)),'[1]',max(SHIPNAME)) as messagecontent,sysdate,#status# from 
+			(select USERNAME,NULL as shipName from HJSD_USER_INFO where USERID=#applyuser#
+			union all
+			select NULL as userName,SHIPNAME from HJSD_SHIP_INFO where SHIPID=#shipid#) temp
+	</insert>
+	
+	<!-- 查询船舶名称是否已存在 ByName -->
+	<select id="queryShipCountByName" parameterClass="java.lang.String"  resultClass="java.lang.Integer">
+		select count(1) from hjsd_ship_info
+		where shipname=#shipname#
+	</select>
+	
+	<!-- 查询船舶名称是否已存在 ById -->
+	<select id="queryShipCountById" parameterClass="java.util.Map"  resultClass="java.lang.Integer">
+		select count(1) from hjsd_ship_info
+		where shipname=#shipname#
+		and shipid !=#shipid#
+	</select>
+	
+	<!-- 查询船舶使用状态 -->
+	<select id="queryShipStatusById" parameterClass="java.lang.String"  resultClass="java.lang.String">
+		select status from hjsd_ship_info
+		where shipid=#shipId#
+	</select>
+	
+	<!-- 删除船舶信息 -->
+	<delete id="deleteMyShipById" parameterClass="java.lang.String">
+		delete from WX_ship_info
+		where id=#id#
+	</delete>
+	
+	<!-- 查询我的船舶列表 -->
+	<select id="getShipById"  parameterClass="java.lang.String"  resultClass="hashmap" >
+		select ship.id,to_char(ship.s_time,'yyyy-mm-dd') as s_time,to_char(ship.e_time,'yyyy-mm-dd') as e_time,ship.tonnage,ship.status,ship.AUDITSTATE,
+			ship.shiptype,ship.jsc,ship.fcsb,ship.REGISTRYPORT,to_char(ship.jzsj,'yyyy-mm-dd') as jzsj,ship.SHIPLONG,ship.SHIPWIDTH,ship.SHIPCAPACITY,
+			ship.DRAUGHT,ship.SHQY,ship.currentport,t1.name,t1.AVATAR,ship.path1,ship.path2,ship.path3,ship.path4
+		from wx_ship_info ship left join WX_USER t1 on t1.openid= ship.CREATEUSER
+		where ship.id = #id#
+	</select>
+	<!-- 查询我的船舶列表 -->
+	<update id="updateShip"  parameterClass="java.util.Map" >
+		update WX_SHIP_INFO set
+		    SHIPNAME=#SHIPNAME#,
+		    TONNAGE=#TONNAGE#,
+		    S_TIME=to_date(#S_TIME#,'yyyy-mm-dd'),
+		    E_TIME=to_date(#E_TIME#,'yyyy-mm-dd'),
+			SHIPTYPE=#SHIPTYPE#,
+		    JSC=#JSC#,
+		    FCSB=#FCSB#,
+			REGISTRYPORT=#REGISTRYPORT#,
+		    JZSJ=to_date(#JZSJ#,'yyyy-mm-dd'),
+			SHIPLONG=#SHIPLONG#,
+			SHIPWIDTH=#SHIPWIDTH#,
+			SHIPCAPACITY=#SHIPCAPACITY#,
+			DRAUGHT=#DRAUGHT#,
+		    SHQY=#SHQY#,
+			CURRENTPORT=#CURRENTPORT#,
+			PUBLISHTIME=SYSDATE,
+			AUDITSTATE=#AUDITSTATE#
+		where ID=#ID#
+	</update>
+</sqlMap>

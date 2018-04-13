@@ -1,0 +1,40 @@
+10
+
+dir
+1652
+svn://192.168.99.55/myapp/goldChannel/src/main/java/com/golden/ship
+svn://192.168.99.55/myapp
+
+
+
+2016-12-13T02:40:16.905414Z
+1651
+xiefuqiang
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+c212159c-280a-47a8-942f-907161f69de7
+
+action
+dir
+
+dao
+dir
+
+po
+dir
+
+service
+dir
+

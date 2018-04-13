@@ -1,0 +1,15 @@
+#mysql.driverclass=com.mysql.jdbc.Driver
+#mysql.jdbcurl=jdbc:mysql://127.0.0.1:3306/test
+#mysql.user=root
+#mysql.password=braba
+
+jdbc.driverClassName=oracle.jdbc.OracleDriver
+#bendifuwuqi
+#jdbc.url=jdbc:oracle:thin:@192.168.99.55:1521:orcl
+jdbc.url=jdbc:oracle:thin:@121.43.39.69:1521:orcl
+jdbc.username=goldchannel
+jdbc.password=goldchannel
+
+jdbc.initialSize=1
+jdbc.maxActive=3
+jdbc.maxIdle=1

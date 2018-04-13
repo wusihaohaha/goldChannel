@@ -1,0 +1,101 @@
+package com.golden.login.po;
+
+import java.io.Serializable;
+
+import org.springframework.stereotype.Component;
+
+/**
+ * 用户个人信息实体类
+ * date: 2016年9月12日 下午2:36:41 <br/>
+ * @author jiangmeng
+ * @version 
+ * @since JDK 1.7
+ */
+@Component
+public class UserBean implements Serializable
+{
+    /**
+     * serialVersionUID:版本1
+     * @since JDK 1.7
+     */
+    private static final long serialVersionUID = 1L;
+    
+    private String userid; //用户id
+    private String usertel; //注册手机号
+    private String username; //名称
+    private String password; //密码
+    private String picturepath; //图像
+    private String alipayAccount; //支付账户_支付宝
+    private String alipayName; //支付姓名_支付宝
+    private String weChatAccount; //支付账户_微信
+    private String weChatName; //支付姓名_微信
+    private String createtime; //注册时间
+    
+	public String getUserid() {
+		return userid;
+	}
+	public void setUserid(String userid) {
+		this.userid = userid;
+	}
+	public String getUsertel() {
+		return usertel;
+	}
+	public void setUsertel(String usertel) {
+		this.usertel = usertel;
+	}
+	public String getUsername() {
+		return username;
+	}
+	public void setUsername(String username) {
+		this.username = username;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	/*public String getUsertype() {
+		return usertype;
+	}
+	public void setUsertype(String usertype) {
+		this.usertype = usertype;
+	}*/
+	public String getPicturepath() {
+		return picturepath;
+	}
+	public void setPicturepath(String picturepath) {
+		this.picturepath = picturepath;
+	}
+
+	public String getAlipayAccount() {
+        return alipayAccount;
+    }
+    public void setAlipayAccount(String alipayAccount) {
+        this.alipayAccount = alipayAccount;
+    }
+    public String getAlipayName() {
+        return alipayName;
+    }
+    public void setAlipayName(String alipayName) {
+        this.alipayName = alipayName;
+    }
+    public String getWeChatAccount() {
+        return weChatAccount;
+    }
+    public void setWeChatAccount(String weChatAccount) {
+        this.weChatAccount = weChatAccount;
+    }
+    public String getWeChatName() {
+        return weChatName;
+    }
+    public void setWeChatName(String weChatName) {
+        this.weChatName = weChatName;
+    }
+    public String getCreatetime() {
+		return createtime;
+	}
+	public void setCreatetime(String createtime) {
+		this.createtime = createtime;
+	}
+}

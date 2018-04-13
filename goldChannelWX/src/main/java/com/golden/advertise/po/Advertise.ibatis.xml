@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="advertise">
+	<typeAlias alias="Resume" type="com.golden.advertise.po.Resume" />
+	<typeAlias alias="InviteInfo" type="com.golden.advertise.po.InviteInfo" />
+	
+	<!-- 查询用户是否已经创建简历 -->
+	<select id="queryIsaddResumeinfo" parameterClass="java.lang.String" resultClass="java.lang.Integer">
+		select count(1) from hjsd_cv_info
+		where createuser=#userId#
+	</select>
+	
+	<!-- 创建简历 -->
+	<insert id="addResumeInfo"  parameterClass="Resume">
+		insert into hjsd_cv_info(username,picturepath,birthday,contacttel,idcard,
+			workexperience,needduty,salary,currentprovince,currentcity,pastduty,
+			shippingexperience,introduction,certificate,auditstate,
+			status,createuser,publishtime)
+		values(#userName#,#picturePath#,#age#,#contactTel#,#idCard#,#workExperience#,
+		#needDuty#,#salary#,#currentpProvince#,#currentCity#,#pastDuty#,#shippingExperience#,
+		#introduction#,#certificate#,1,1,#createUser#,sysdate)
+	</insert>
+	
+	<!-- 查询简历信息 -->
+	<select id="queryResumeinfoByid" parameterClass="java.lang.String" resultClass="Resume">
+		select cvid as cvId,username as userName,picturepath as picturePath,birthday as age,
+			contacttel as contactTel,idcard as idCard,workexperience as workExperience,
+			needduty as needDuty,salary,currentprovince as currentpProvince,currentcity as currentCity,
+			pastduty as pastDuty,shippingexperience as shippingExperience,introduction as introduction,
+			certificate,createuser as createUser,auditstate as auditState,status,publishtime as publishTime
+		from hjsd_cv_info
+		where cvid=#inviteid#
+	</select>
+	
+	<!-- 查询聘请信息列表 -->
+	<select id="queryInviteListByid" parameterClass="java.util.Map" resultClass="InviteInfo">
+		select a.inviteid as inviteId,b.username as inviterName,b.usertel as inviterTel,
+			to_char(a.createtime,'yyyy-MM-dd') as inviteTime,status
+		from hjsd_recruitinvite_info a,
+			hjsd_user_info b
+		where a.inviteuser=b.userid
+			and a.beinviteduser=#userId#
+			and a.status=#status#
+			order by a.createtime desc
+	</select>
+	
+	<!-- 同意或拒绝聘请 -->
+	<update id="updateInviteStatuByid" parameterClass="java.util.Map">
+		update hjsd_recruitinvite_info
+			set status=#status#
+		where inviteuser=#inveterId#
+			and beinviteduser=#userId#
+			and status=1
+	</update>
+	
+	<!-- 删除简历信息 -->
+	<delete id="deleteResumeInfoByid" parameterClass="java.lang.String">
+		delete from hjsd_cv_info
+		where createuser=#userId#
+	</delete>
+	
+	<!-- 查询所有简历信息列表 -->
+	<select id="queryAllResume" parameterClass="java.util.Map" resultClass="Resume">
+	select cvId,userName,picturePath,age,contactTel,idCard,workExperience,needDuty,
+		salary,currentpProvince,currentCity,pastDuty,shippingExperience,introduction,status,
+		certificate,createUser
+	from
+		(select rownum rn,t.* from
+			(select cvid as cvId,username as userName,picturepath as picturePath,birthday as age,
+				contacttel as contactTel,idcard as idCard,workexperience as workExperience,
+				needduty as needDuty,salary,currentprovince as currentpProvince,currentcity as currentCity,
+				pastduty as pastDuty,shippingexperience as shippingExperience,introduction,status,
+				certificate,createuser as createUser
+			from hjsd_cv_info
+			where 1=1
+			and auditstate=3
+			<dynamic>
+	 			<isNotEmpty property="currentCity" prepend="AND">
+	   			 currentcity like '%'||#currentCity#||'%'
+	  			</isNotEmpty>
+	  			<isNotEmpty property="workExperience" prepend="AND">
+	   			 workexperience=#workExperience#
+	  			</isNotEmpty>
+	  			<isNotEmpty property="needDuty" prepend="AND">
+	   			 needduty=#needDuty#
+	  			</isNotEmpty>
+	  			<isNotEmpty property="salary" prepend="AND">
+	   			 salary=#salary#
+	  			</isNotEmpty>
+	  		) t)
+	<![CDATA[ where rn>=#beginIndex# and rn<=#endIndex# ]]>
+  		</dynamic>
+	</select>
+	
+	<!-- 修改个人简历状态 -->
+	<update id="updateRemuseStatuByid" parameterClass="java.util.Map">
+		update hjsd_cv_info set status=#workstatus#
+		where createuser=#userId#
+	</update>
+	
+	<!-- 查询简历id -->
+	<select id="queryInviteidByuid" parameterClass="java.lang.String" resultClass="java.lang.String">
+		select cvid from hjsd_cv_info
+		where createuser=#userId#
+	</select>
+	
+	<!-- 查询邀请状态 -->
+	<select id="queryIsinviteByuid" parameterClass="java.util.Map" resultClass="java.lang.String">
+		select status from hjsd_recruitinvite_info a,
+			(select createuser from hjsd_cv_info where cvid=#inviteId#) b
+		where a.beinviteduser=b.createuser
+			and a.inviteuser=#userId#
+	</select>
+	
+	<!-- 添加邀请记录 -->
+	<insert id="addInviteInfo" parameterClass="java.util.Map">
+		insert into hjsd_recruitinvite_info
+			(inviteuser,beinviteduser,status,createtime)
+		values(#myid#,#otid#,1,sysdate)
+	</insert>
+	
+	<!-- 我的船员 -->
+	<select id="queryMyshipperList" parameterClass="java.lang.String" resultClass="Resume">
+		select a.cvid as cvId,a.username as userName,a.picturepath as picturePath,a.birthday as age,
+			a.contacttel as contactTel,a.idcard as idCard,a.workexperience as workExperience,
+			a.needduty as needDuty,a.salary,a.currentprovince as currentpProvince,a.currentcity as currentCity,
+			a.pastduty as pastDuty,a.shippingexperience as shippingExperience,a.introduction as introduction,
+			a.certificate as certificate,a.createuser as createUser,b.inviteid as inviteId,b.status
+		from hjsd_cv_info a,
+			hjsd_recruitinvite_info b
+		where a.createuser=b.beinviteduser
+			and b.inviteuser=#userId#
+			and (b.status=1 or b.status=2)
+			order by b.status asc,b.createtime asc
+	</select>
+	
+	<!-- 查询是否已经加入船队 -->
+	<select id="queryIsagreeInvite" parameterClass="java.lang.String" resultClass="java.lang.Integer">
+		select count(1) from hjsd_recruitinvite_info
+		where beinviteduser=#userId#
+			and status=2
+	</select>
+	
+	<!-- 修改简历信息 -->
+	<update id="updateRemuseInfoByid"  parameterClass="Resume">
+		update hjsd_cv_info set
+			username=#userName#,picturepath=#picturePath#,birthday=#age#,
+			contacttel=#contactTel#,idcard=#idCard#,workexperience=#workExperience#,
+			needduty=#needDuty#,salary=#salary#,currentprovince=#currentpProvince#,
+			currentcity=#currentCity#,pastduty=#pastDuty#,shippingexperience=#shippingExperience#,
+			introduction=#introduction#,auditstate=1,
+		<isNotEmpty property="certificate">
+   			 certificate=#certificate#,
+  		</isNotEmpty>
+			publishtime=sysdate
+		where cvid=#cvId#
+	</update>
+	
+	<!-- 查询简历审核状态 -->
+	<select id="queryResumeStatus" parameterClass="java.lang.String" resultClass="java.lang.String">
+		select auditstate from hjsd_cv_info
+		where cvid=#cvId#
+	</select>
+	
+	<!-- 查询是否已经添加简历信息 -->
+	<select id="queryApplyCount" parameterClass="java.lang.String" resultClass="java.lang.Integer">
+		select count(1) from hjsd_cv_info
+		where createuser=#userId#
+	</select>
+	
+	<!-- 查询邀请信息是否存在 -->
+	<select id="queryIsExistInfoByid" parameterClass="java.lang.String" resultClass="java.lang.Integer">
+		select count(1) from hjsd_recruitinvite_info
+		where inviteid=#inviteId#
+	</select>
+	
+	<!-- 查询简要信息 -->
+	<select id="querySimpInfoByid"  parameterClass="java.lang.String" resultClass="InviteInfo">
+		select a.inviteuser as inviterId,b.username as beInviterName
+		from hjsd_recruitinvite_info a,
+			hjsd_cv_info b
+		where a.beinviteduser=b.createuser
+			and a.inviteid=#inviteId#
+	</select>
+	
+	<!-- 拒绝其他的邀请信息 -->
+	<delete id="refuseOtherInviteInfo" parameterClass="java.util.Map">
+		delete from hjsd_recruitinvite_info
+		where beinviteduser=#userId#
+	<![CDATA[ 
+			and inviteid<>#inviteId#
+		]]>
+	</delete>
+	
+	<!-- 添加消息通知 -->
+	<insert id="addSendMessage" parameterClass="java.util.Map">
+		insert into hjsd_message_info
+			(title,messagetype,messagecontent,receiveuser,createtime,status)
+		values(#title#,2,#message#,#inveterId#,sysdate,1)
+	</insert>
+	
+	<!-- 查询被邀请者姓名 -->
+	<select id="queryBeInveterNameByuid" parameterClass="java.lang.String" resultClass="java.lang.String">
+		select username
+		from hjsd_cv_info
+		where createuser=#userId#
+	</select>
+	
+	<!-- 选中记录的邀请人id -->
+	<select id="queryThisInveterId"  parameterClass="java.lang.String" resultClass="java.lang.String">
+		select inviteuser
+		from hjsd_recruitinvite_info
+		where inviteid=#inviteId#
+	</select>
+	
+	<!-- 查询所有邀请者id -->
+	<select id="queryInveterIds" parameterClass="java.lang.String" resultClass="java.lang.String">
+		select inviteuser
+		from hjsd_recruitinvite_info
+		where beinviteduser=#userId#
+			and status=1
+	</select>
+	
+	<!-- 查询是否已经接受邀请 -->
+	<select id="queryAgreeCount" parameterClass="java.lang.String" resultClass="java.lang.Integer">
+		select count(1) from hjsd_recruitinvite_info
+		where beinviteduser=#userId#
+			and status=2
+	</select>
+	
+	<!-- 查询邀请状态 -->
+	<select id="queryInviteStatus" parameterClass="java.lang.String" resultClass="java.lang.String">
+		select status from hjsd_recruitinvite_info
+		where inviteid=#inviteId#
+	</select>
+	
+	<!-- 删除邀请记录 -->
+	<delete id="deleteInviteInfo" parameterClass="java.util.Map">
+		delete from hjsd_recruitinvite_info
+		where inviteid=#inviteId#
+			and status=#status#
+	</delete>
+	
+	<!-- 被邀请船员id -->
+	<select id="queryBeinviterId" parameterClass="java.lang.String" resultClass="java.lang.String">
+		select beinviteduser from hjsd_recruitinvite_info
+		where inviteid=#inviteId#
+	</select>
+	
+	<!-- 查询是否已经邀请该用户 -->
+	<select id="queryInviteCount" parameterClass="java.util.Map" resultClass="java.lang.Integer">
+		select count(1) from hjsd_recruitinvite_info
+		where inviteuser=#inviteUser#
+		and beinviteduser=#beinvitedUser#
+		and status=1
+	</select>
+	
+	<!-- 邀请者姓名 -->
+	<select id="queryInviterName" parameterClass="java.lang.String" resultClass="java.lang.String">
+		select username from hjsd_user_info
+		where userid=#myid#
+	</select>
+	
+	<!-- 通过邀请记录id查询邀请人姓名 -->
+	<select id="queryInviterNameByInvid" parameterClass="java.lang.String" resultClass="java.lang.String">
+		select a.username from hjsd_user_info a,
+			hjsd_recruitinvite_info b
+		where a.userid=b.inviteuser
+			and b.inviteid=#inviteId#
+			and b.status=2
+	</select>
+</sqlMap>

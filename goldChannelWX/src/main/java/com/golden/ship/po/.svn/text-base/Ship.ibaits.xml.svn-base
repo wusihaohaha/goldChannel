@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="Ship">
+<typeAlias alias="Ship" type="com.golden.ship.po.Ship" />
+<typeAlias alias="ShipApply" type="com.golden.ship.po.ApplyShipping" />
+
+	<!-- 添加船舶基本信息-->
+	<insert id="addShips" parameterClass="Ship">
+		insert into hjsd_ship_info
+		   (SHIPNAME,
+		    TONNAGE,
+			SHIPTYPE,
+			SHIPLONG,
+			SHIPWIDTH,
+			SHIPCAPACITY,
+			DRAUGHT,
+			HATCHNUMBER,
+			REGISTRYPORT,
+			HULLINSURANCE,
+			PICTUREPATH,
+			BUSINESSCERTIFICATE,
+			AIRWORTHINESSCERTIFICATE,
+			INTERNATIONALCERTIFICATE,
+			CURRENTPROVINCE,
+			CURRENTCITY,
+			CURRENTPORT,
+			CREATEUSER,
+			PUBLISHTIME,
+			AUDITSTATE,
+			STATUS)
+		values
+		   (#shipname#,
+			#tonnage#,
+			#shiptype#,
+			#shiplong#,
+			#shipwidth#,
+			#shipcapacity#,
+			#draught#,
+			#hatchnumber#,
+			#registryport#,
+			#hullInsurance#,
+			#picturepath#,
+			#businesscertificate#,
+			#airworthinesscertificate#,
+			#internationalcertificate#,
+			#currentprovince#,
+			#currentcity#,
+			#currentport#,
+			#createuser#,
+			sysdate,
+			1,
+			1 )
+	</insert>
+	
+	<!-- 查询我的船舶列表 -->
+	<select id="queryMyshipList"  parameterClass="java.util.Map"  resultClass="Ship" >
+		select shipid,shipname,RTRIM(to_char(tonnage,'fm999999999999990.99'),'.')  as tonnage,shiptype,picturepath,
+			currentcity,currentport,auditstate,status
+		from
+			(select rownum rn,t.*
+			from
+				(select shipid,shipname,tonnage,shiptype,picturepath,
+					currentcity,currentport,auditstate,status
+				from hjsd_ship_info
+				where 1=1
+					and createuser=#createuser#
+					order by auditstate,publishtime desc
+				) t
+			)
+		<![CDATA[ where rn>=#beginIndex# and rn<=#endIndex# ]]>
+	</select>
+	
+	<!-- 查询地方船舶列表 -->
+	<select id="findShiponRound" parameterClass="java.util.Map"  resultClass="Ship">
+		select shipid,shipname,RTRIM(to_char(tonnage,'fm999999999999990.99'),'.') as tonnage,shiptype,picturepath,
+			currentcity,currentport,shipstatus,createuser
+      	from
+			(select rownum rn,t.* from
+				(select ship.shipid,ship.shipname,ship.tonnage,ship.shiptype,ship.picturepath,
+					ship.currentcity,ship.currentport,ship.createuser,
+					<isNotEmpty property="userid">
+						case when apply.SHIPAPPLYID is not null then #apply# else #noApply# end as shipstatus 
+					</isNotEmpty>
+					<isEmpty property="userid">
+						 #noApply# as shipstatus 
+					</isEmpty>
+				from hjsd_ship_info ship
+				<isNotEmpty property="userid">
+					left outer join HJSD_SHIPAPPLY_INFO apply on apply.APPLYUSER=#userid# and apply.SHIPID=ship.SHIPID
+				</isNotEmpty>
+				where 1=1
+				<dynamic>
+ 					<isNotEmpty property="currentprovince" prepend="AND">
+   			 			ship.currentprovince like '%'||#currentprovince#||'%'
+  					</isNotEmpty>
+  					<isNotEmpty property="currentcity" prepend="AND">
+   			 			ship.currentcity like '%'||#currentcity#||'%'
+  					</isNotEmpty>
+  					<isNotEmpty property="shiptype" prepend="AND">
+   			 			ship.shiptype=#shiptype#
+  					</isNotEmpty>
+  				</dynamic>
+  					and ship.tonnage between #topton# and #downton#
+    				and ship.auditstate=#auditstate#
+    				and ship.status=#status#
+    				order by ship.publishtime desc) t )
+    				where 1=1
+    				and
+			 <![CDATA[ 
+				rn >= #beginIndex# and rn <= #endIndex#
+	 		 ]]>
+	</select>
+	
+	<!-- 修改船舶信息 -->
+	<update id="updateShipinfoByid" parameterClass="Ship">
+		update hjsd_ship_info set
+		    SHIPNAME=#shipname#,
+		    TONNAGE=#tonnage#,
+			SHIPTYPE=#shiptype#,
+			SHIPLONG=#shiplong#,
+			SHIPWIDTH=#shipwidth#,
+			SHIPCAPACITY=#shipcapacity#,
+			DRAUGHT=#draught#,
+			HATCHNUMBER=#hatchnumber#,
+			REGISTRYPORT=#registryport#,
+			HULLINSURANCE=#hullInsurance#,
+			<isNotEmpty property="picturepath">
+				PICTUREPATH=#picturepath#,
+			</isNotEmpty>
+			<isNotEmpty property="businesscertificate">
+				BUSINESSCERTIFICATE=#businesscertificate#,
+			</isNotEmpty>
+			<isNotEmpty property="airworthinesscertificate">
+				AIRWORTHINESSCERTIFICATE=#airworthinesscertificate#,
+			</isNotEmpty>
+			<isNotEmpty property="internationalcertificate">
+				INTERNATIONALCERTIFICATE=#internationalcertificate#,
+			</isNotEmpty>
+			CURRENTPROVINCE=#currentprovince#,
+			CURRENTCITY=#currentcity#,
+			CURRENTPORT=#currentport#,
+			PUBLISHTIME=sysdate,
+			AUDITSTATE=1
+		where SHIPID=#shipid#
+	</update>
+	
+	<!-- 补全货物信息 -->
+	<update id="updateGoodsInfo" parameterClass="java.util.Map">
+		update hjsd_goodssource_info
+			set paytype =#paytype#,thefirstpayment=#thefirstpayment# ,status=#status#,freightprice=trunc(#freightprice#,2),goodsweight=trunc(#goodsweight#,2)
+		where goodssourceid=#goodssourceid#
+	</update>
+	
+	<!-- 添加申请船运记录 -->
+	<insert id="addApplyShipping" parameterClass="java.util.Map">
+		insert into hjsd_shipapply_info
+			(shipid,goodssourceid,status,shipowner,applyuser,applytime)
+			values(#shipid#,#goodssourceid#,#status#,#shipowner#,#applyuser#,sysdate)
+	</insert>
+	
+		<!-- 添加船运申请消息 -->
+	<insert id="addMessageInfo" parameterClass="java.util.Map">
+		insert into hjsd_message_info
+			(receiveuser,title,messagetype,messagecontent,createtime,status)
+		select #shipowner#,#title#,#messagetype#,replace(replace(#content#,'[0]', max(USERNAME)),'[1]',max(SHIPNAME)) as messagecontent,sysdate,#status# from 
+			(select USERNAME,NULL as shipName from HJSD_USER_INFO where USERID=#applyuser#
+			union all
+			select NULL as userName,SHIPNAME from HJSD_SHIP_INFO where SHIPID=#shipid#) temp
+	</insert>
+	
+	<!-- 查询船舶名称是否已存在 ByName -->
+	<select id="queryShipCountByName" parameterClass="java.lang.String"  resultClass="java.lang.Integer">
+		select count(1) from hjsd_ship_info
+		where shipname=#shipname#
+	</select>
+	
+	<!-- 查询船舶名称是否已存在 ById -->
+	<select id="queryShipCountById" parameterClass="java.util.Map"  resultClass="java.lang.Integer">
+		select count(1) from hjsd_ship_info
+		where shipname=#shipname#
+		and shipid !=#shipid#
+	</select>
+	
+	<!-- 查询船舶使用状态 -->
+	<select id="queryShipStatusById" parameterClass="java.lang.String"  resultClass="java.lang.String">
+		select status from hjsd_ship_info
+		where shipid=#shipId#
+	</select>
+	
+	<!-- 删除船舶信息 -->
+	<delete id="deleteMyShipById" parameterClass="java.util.Map">
+		delete from hjsd_ship_info
+		where shipid=#shipId#
+			and status=#status#
+	</delete>
+</sqlMap>

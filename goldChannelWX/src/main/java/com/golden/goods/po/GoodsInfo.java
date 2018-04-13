@@ -1,0 +1,458 @@
+/**
+ * Project Name:goldChannel
+ * File Name:GoodsInfo.java
+ * Package Name:com.golden.goods.po
+ * Date:2016年10月19日上午11:03:46
+ * Copyright (c) 2016, 武汉麦尔盛科技有限公司 All Rights Reserved.
+ *
+*/
+
+package com.golden.goods.po;
+
+import java.io.Serializable;
+
+import org.springframework.stereotype.Component;
+
+/**
+ * ClassName:GoodsInfo <br/>
+ * Function: 货物信息-实体类. <br/>
+ * Date:     2016年10月19日 上午11:03:46 <br/>
+ * @author   zhoujq
+ * @version  
+ * @since    JDK 1.7
+ * @see 	 
+ */
+@Component
+public class GoodsInfo implements Serializable{
+
+    private static final long serialVersionUID = 1L;
+    
+    private String goodsSourceId; //货源ID  自动生成
+    private String bidId;//标书ID  自动生成（格式:HJSD+YYYYMMDD+自动id 4位）
+    private String goodsName; //货物信息—货源名称
+    private String goodsType; //货物信息—货源类型  1:石子 2:沙子 3:钢材 4:煤炭及制品 5:金属矿石 6:非金属矿石 7:熟料 8:水泥 9:矿建材料 10:有色金属 11:大件 12:粮食 13:机械设备和电器 14:木材 15:其他建筑材料 16:其他
+    private String goodsWeight; //货物信息—货量（吨）
+    private String picturePath; //货物信息—图片
+    private String departureProvince; //承运线路—发货省份
+    private String departurePort; //承运线路—发货港
+    private String departureWharf; //承运线路—发货码头
+    private String arrivalProvince; //承运线路—到达省份
+    private String arrivalPort; //承运线路—到达港
+    private String arrivalWharf; //承运线路—到达码头
+    private String draught; //船规—吃水(米)
+    private String loadTime; //装货要求—受载时间
+    private String loadingTime; //装货要求—装货时限
+    private String dischargeTime; //装货要求—卸货时限
+    private String byThePiece; //装货要求—装运要求(计件交接) 1:不要求 2:要求
+    private String byWeigh; //装货要求—装运要求(过磅交接) 1:不要求 2:要求
+    private String originalBinding; //装货要求—装运要求(原装原卸) 1:不要求 2:要求
+    private String moistureProof; //装货要求—装运要求(防雨防潮) 1:不要求 2:要求
+    private String antiPollution; //装货要求—装运要求(防污染) 1:不要求 2:要求
+    private String otherInstruction; //装货要求—其他要求
+    private String packageType; //装货要求—装运方式  1.整船装运 2.拼船装运
+    private String payType; //结算要求—结算方式 1.线上 2.线下
+    private String limitedPrice; //竞标设置—限价（元/吨）
+    private String harborTolls; //竞标设置—港口建设费  1:不包含 2：包含
+    private String demurrage; //竞标设置—滞期费（元/吨/天）
+    private String otherPrice; //竞标设置—其他费用
+    private String bidOpenTime; //竞标设置—开标时间
+    private String additionalContent; //附加条款—内容
+    private String createUser; //发布人Tel  来源：用户信息表.用户ID
+    private String publishTime; //发布时间
+    private String status; //状态 1:信息 2:待审核 3:竞标中 4:流标(无人竞标) 5:竞标结束 6:申请船运 7:定船 8:删除
+    private String adminId; //跟单管理员 来源：管理员信息表.用户ID
+    private String theFirstPayment;//首付款
+    private String freightPrice;//货运价格（元/吨）
+    private String biddingNumber;//竞标人数
+    private String remainingDays;//剩余天数（不满1为1;大于1四舍五入）
+    private String goodsStatus;//货物竞标状态 0:未竞标 1:竞标 
+    private String bidType;//标类型 1:发标 2:竞标
+
+    private String bidPrice;//竞标价格(船方竞标价)
+    private String goodsBidId;//竞标ID
+    private String loadingDemand;//货物-装运要求(五个要求文字内容拼接)
+    
+    private String adminName;//管理员名称
+    private String adminTel;//管理员电话
+    
+    private String shipName;//竞标船只
+    private String shipId;//竞标船只Id
+
+    public String getGoodsSourceId() {
+        return goodsSourceId;
+    }
+
+    public void setGoodsSourceId(String goodsSourceId) {
+        this.goodsSourceId = goodsSourceId;
+    }
+
+    public String getBidId() {
+        return bidId;
+    }
+
+    public void setBidId(String bidId) {
+        this.bidId = bidId;
+    }
+
+    public String getGoodsName() {
+        return goodsName;
+    }
+
+    public void setGoodsName(String goodsName) {
+        this.goodsName = goodsName;
+    }
+
+    public String getGoodsType() {
+        return goodsType;
+    }
+
+    public void setGoodsType(String goodsType) {
+        this.goodsType = goodsType;
+    }
+
+    public String getGoodsWeight() {
+        return goodsWeight;
+    }
+
+    public void setGoodsWeight(String goodsWeight) {
+        this.goodsWeight = goodsWeight;
+    }
+
+    public String getPicturePath() {
+        return picturePath;
+    }
+
+    public void setPicturePath(String picturePath) {
+        this.picturePath = picturePath;
+    }
+
+    public String getDepartureProvince() {
+        return departureProvince;
+    }
+
+    public void setDepartureProvince(String departureProvince) {
+        this.departureProvince = departureProvince;
+    }
+
+    public String getDeparturePort() {
+        return departurePort;
+    }
+
+    public void setDeparturePort(String departurePort) {
+        this.departurePort = departurePort;
+    }
+
+    public String getDepartureWharf() {
+        return departureWharf;
+    }
+
+    public void setDepartureWharf(String departureWharf) {
+        this.departureWharf = departureWharf;
+    }
+
+    public String getArrivalProvince() {
+        return arrivalProvince;
+    }
+
+    public void setArrivalProvince(String arrivalProvince) {
+        this.arrivalProvince = arrivalProvince;
+    }
+
+    public String getArrivalPort() {
+        return arrivalPort;
+    }
+
+    public void setArrivalPort(String arrivalPort) {
+        this.arrivalPort = arrivalPort;
+    }
+
+    public String getArrivalWharf() {
+        return arrivalWharf;
+    }
+
+    public void setArrivalWharf(String arrivalWharf) {
+        this.arrivalWharf = arrivalWharf;
+    }
+
+    public String getDraught() {
+        return draught;
+    }
+
+    public void setDraught(String draught) {
+        this.draught = draught;
+    }
+
+    public String getLoadTime() {
+        return loadTime;
+    }
+
+    public void setLoadTime(String loadTime) {
+        this.loadTime = loadTime;
+    }
+
+    public String getLoadingTime() {
+        return loadingTime;
+    }
+
+    public void setLoadingTime(String loadingTime) {
+        this.loadingTime = loadingTime;
+    }
+
+    public String getDischargeTime() {
+        return dischargeTime;
+    }
+
+    public void setDischargeTime(String dischargeTime) {
+        this.dischargeTime = dischargeTime;
+    }
+
+    public String getByThePiece() {
+        return byThePiece;
+    }
+
+    public void setByThePiece(String byThePiece) {
+        this.byThePiece = byThePiece;
+    }
+
+    public String getByWeigh() {
+        return byWeigh;
+    }
+
+    public void setByWeigh(String byWeigh) {
+        this.byWeigh = byWeigh;
+    }
+
+    public String getOriginalBinding() {
+        return originalBinding;
+    }
+
+    public void setOriginalBinding(String originalBinding) {
+        this.originalBinding = originalBinding;
+    }
+
+    public String getMoistureProof() {
+        return moistureProof;
+    }
+
+    public void setMoistureProof(String moistureProof) {
+        this.moistureProof = moistureProof;
+    }
+
+    public String getAntiPollution() {
+        return antiPollution;
+    }
+
+    public void setAntiPollution(String antiPollution) {
+        this.antiPollution = antiPollution;
+    }
+
+    public String getOtherInstruction() {
+        return otherInstruction;
+    }
+
+    public void setOtherInstruction(String otherInstruction) {
+        this.otherInstruction = otherInstruction;
+    }
+
+    public String getPackageType() {
+        return packageType;
+    }
+
+    public void setPackageType(String packageType) {
+        this.packageType = packageType;
+    }
+
+    public String getPayType() {
+        return payType;
+    }
+
+    public void setPayType(String payType) {
+        this.payType = payType;
+    }
+
+    public String getLimitedPrice() {
+        return limitedPrice;
+    }
+
+    public void setLimitedPrice(String limitedPrice) {
+        this.limitedPrice = limitedPrice;
+    }
+
+    public String getHarborTolls() {
+        return harborTolls;
+    }
+
+    public void setHarborTolls(String harborTolls) {
+        this.harborTolls = harborTolls;
+    }
+
+    public String getDemurrage() {
+        return demurrage;
+    }
+
+    public void setDemurrage(String demurrage) {
+        this.demurrage = demurrage;
+    }
+
+    public String getOtherPrice() {
+        return otherPrice;
+    }
+
+    public void setOtherPrice(String otherPrice) {
+        this.otherPrice = otherPrice;
+    }
+
+    public String getBidOpenTime() {
+        return bidOpenTime;
+    }
+
+    public void setBidOpenTime(String bidOpenTime) {
+        this.bidOpenTime = bidOpenTime;
+    }
+
+    public String getAdditionalContent() {
+        return additionalContent;
+    }
+
+    public void setAdditionalContent(String additionalContent) {
+        this.additionalContent = additionalContent;
+    }
+
+    public String getCreateUser() {
+        return createUser;
+    }
+
+    public void setCreateUser(String createUser) {
+        this.createUser = createUser;
+    }
+
+    public String getPublishTime() {
+        return publishTime;
+    }
+
+    public void setPublishTime(String publishTime) {
+        this.publishTime = publishTime;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getAdminId() {
+        return adminId;
+    }
+
+    public void setAdminId(String adminId) {
+        this.adminId = adminId;
+    }
+
+    public String getTheFirstPayment() {
+        return theFirstPayment;
+    }
+
+    public void setTheFirstPayment(String theFirstPayment) {
+        this.theFirstPayment = theFirstPayment;
+    }
+
+    public String getFreightPrice() {
+        return freightPrice;
+    }
+
+    public void setFreightPrice(String freightPrice) {
+        this.freightPrice = freightPrice;
+    }
+
+    public String getBiddingNumber() {
+        return biddingNumber;
+    }
+
+    public void setBiddingNumber(String biddingNumber) {
+        this.biddingNumber = biddingNumber;
+    }
+
+    public String getRemainingDays() {
+        return remainingDays;
+    }
+
+    public void setRemainingDays(String remainingDays) {
+        this.remainingDays = remainingDays;
+    }
+
+    public String getGoodsStatus() {
+        return goodsStatus;
+    }
+
+    public void setGoodsStatus(String goodsStatus) {
+        this.goodsStatus = goodsStatus;
+    }
+
+    public String getBidType() {
+        return bidType;
+    }
+
+    public void setBidType(String bidType) {
+        this.bidType = bidType;
+    }
+
+    public String getBidPrice() {
+        return bidPrice;
+    }
+
+    public void setBidPrice(String bidPrice) {
+        this.bidPrice = bidPrice;
+    }
+
+    public String getGoodsBidId() {
+        return goodsBidId;
+    }
+
+    public void setGoodsBidId(String goodsBidId) {
+        this.goodsBidId = goodsBidId;
+    }
+
+    public String getLoadingDemand() {
+        return loadingDemand;
+    }
+
+    public void setLoadingDemand(String loadingDemand) {
+        this.loadingDemand = loadingDemand;
+    }
+
+    public String getAdminName() {
+        return adminName;
+    }
+
+    public void setAdminName(String adminName) {
+        this.adminName = adminName;
+    }
+
+    public String getAdminTel() {
+        return adminTel;
+    }
+
+    public void setAdminTel(String adminTel) {
+        this.adminTel = adminTel;
+    }
+
+    public String getShipName() {
+        return shipName;
+    }
+
+    public void setShipName(String shipName) {
+        this.shipName = shipName;
+    }
+
+    public String getShipId() {
+        return shipId;
+    }
+
+    public void setShipId(String shipId) {
+        this.shipId = shipId;
+    }
+
+}
+

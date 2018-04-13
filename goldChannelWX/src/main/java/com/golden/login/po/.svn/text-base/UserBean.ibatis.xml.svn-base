@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="UserBeanSqlMap">
+	<typeAlias alias="UserBean" type="com.golden.login.po.UserBean" />
+	<!-- 用户登录 -->
+	<select id="login" parameterClass="java.util.Map" resultClass="UserBean">
+		select userid,usertel,username,picturepath
+		from hjsd_user_info
+		where usertel=#telephone#
+			and password=#password#
+	</select>
+	
+	<!-- 查询手机号码是否存在 -->
+	<select id="checkTelephone" parameterClass="java.lang.String" resultClass="java.lang.Integer">
+		select count(1) from HJSD_USER_INFO where USERTEL =#telephone#
+	</select>
+	
+	<!-- 用户注册 -->
+	<insert id="addRegisterUser" parameterClass="java.util.Map">
+		insert into hjsd_user_info (
+			usertel,
+			username,
+			password,
+			picturepath,
+			createtime
+			) 
+			values
+			(
+			#telephone#,
+			#userName#,
+			#password#,
+			#headimg#,
+			sysdate)
+	</insert>
+	
+	<!-- 修改用户密码 -->
+	<update id="updatePassword" parameterClass="java.util.Map">
+		update HJSD_USER_INFO set PASSWORD=#password# where USERTEL=#telephone#
+	</update>
+	
+	<!-- 验证旧密码是否正确 -->
+	<select id="checkOldPwd" parameterClass="java.util.Map" resultClass="java.lang.Integer">
+		select count(1) from hjsd_user_info where usertel=#telephone# and password=#password#
+	</select>
+	
+	<!-- 修改用户信息 -->
+	<update id="updateUserById" parameterClass="UserBean">
+		update HJSD_USER_INFO set USERNAME =#username# where USERTEL=#usertel#
+	</update>
+	
+	<!-- 根据用户ID查询用户信息 -->
+	<select id="findUserById" parameterClass="java.lang.String" resultClass="UserBean">
+		select userid,usertel,username,picturepath,alipayAccount,alipayName,weChatAccount,weChatName
+		from hjsd_user_info
+		where usertel=#telephone#
+	</select>
+	
+	<!-- 查询昵称是否已经被使用 -->
+	<select id="queryHadname" parameterClass="java.lang.String" resultClass="java.lang.Integer">
+		select count(1) from hjsd_user_info
+		where username=#username#
+	</select>
+	
+	<!-- 修改用户头像 -->
+	<update id="updateSelfHead" parameterClass="java.util.Map">
+		update hjsd_user_info set picturepath=#filepath#
+		where userid=#userid#
+	</update>
+	
+	<!-- 查询用户是否是维修师傅 -->
+	<select id="queryRepairApplyId" parameterClass="java.lang.String" resultClass="java.lang.String">
+		select applyid from hjsd_maintenanceapply_info
+		where applyuser=#userid#
+			and auditstate=3
+	</select>
+	
+	<!-- 修改维修师傅地址 -->
+	<update id="updateRepairAdress" parameterClass="java.util.Map">
+		update hjsd_maintenanceapply_info set
+			currentprovince=#currentProvince#,
+			currentcity=#currentCity#
+		where applyid=#applyId#
+	</update>
+</sqlMap>

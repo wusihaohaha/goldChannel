@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="news">
+	<typeAlias alias="Information" type="com.golden.typenews.po.Information" />
+	
+	<!-- 查询资讯列表 -->
+	<select id="queryNewsListInfoBytype" parameterClass="java.util.Map" resultClass="Information">
+		select informationId,title,picturePath,createTime,newsType
+		from
+			(select rownum rn,t.*
+			from 
+				(select informationid as informationId,title,newsType,picturepath as picturePath,
+					to_char(createtime,'yyyy-MM-dd hh24:mi') as createTime
+				from hjsd_information_info
+			where informationtype=#type#
+				order by createtime desc) t)
+		<![CDATA[ where rn>=#beginIndex# and rn<=#endIndex# ]]>
+	</select>
+	
+	<select id="querySetNews" resultClass="Information">
+		select informationid as informationId,title,newsType,picturepath as picturePath,
+			to_char(createtime,'yyyy-MM-dd hh24:mi') as createTime
+		from hjsd_information_info
+		where selected=1
+		order by createtime desc
+	</select>
+	
+	<!-- 资讯详情 -->
+	<select id="queryNewsDetailsByid" parameterClass="java.lang.String" resultClass="Information">
+		select informationid as informationId,newsType,title,content,picturepath as picturePath,
+			to_char(createtime,'yyyy-MM-dd hh24:mi') as createTime,createuser as createUser
+		from hjsd_information_info
+		where informationid=#informationId#
+	</select>
+	
+		<!-- 资讯详情 -->
+	<select id="queryRefer" resultClass="Information">
+	    select * from ( select * from hjsd_information_info order by dbms_random.value ) where 
+	    <![CDATA[ rownum<=3 and INFORMATIONTYPE ='5']]>
+	</select>
+	
+</sqlMap>

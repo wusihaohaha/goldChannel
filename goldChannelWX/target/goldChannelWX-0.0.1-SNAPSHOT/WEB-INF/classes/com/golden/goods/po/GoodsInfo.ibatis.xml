@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="GoodsInfoSqlMap">
+	<typeAlias alias="GoodsInfo" type="com.golden.goods.po.GoodsInfo" />
+	<typeAlias alias="ApplyShipping" type="com.golden.ship.po.ApplyShipping" />
+	<typeAlias alias="GoodsBidInfo" type="com.golden.goods.po.GoodsBidInfo" />
+	<typeAlias alias="ShipOrderInfo" type="com.golden.order.po.ShipOrderInfo" />
+
+	<!-- 查询我的货物 -->
+	<select id="selectMyGoodsInfo" parameterClass="java.util.Map" resultClass="GoodsInfo">
+		select * from ( select temp.*,ROWNUM as rn from (
+				select GOODSSOURCEID, GOODSNAME, STATUS, PICTUREPATH,DEPARTUREPROVINCE, DEPARTUREPORT, DEPARTUREWHARF, 
+				ARRIVALPROVINCE, ARRIVALPORT, ARRIVALWHARF
+		from HJSD_GOODSSOURCE_INFO where CREATEUSER=#userId# and STATUS = #status# order by PUBLISHTIME desc
+		<![CDATA[ ) temp ) where rn >= #rowMin# and rn <= #rowMax#]]>
+	</select>
+	
+ 	<!-- 通过id查询货物详细信息 -->
+	<select id="selectGoodsDetailById" parameterClass="java.lang.String" resultClass="GoodsInfo">
+		select GOODSSOURCEID, GOODSNAME, GOODSTYPE, PICTUREPATH, DEPARTUREPROVINCE, DEPARTUREPORT, DEPARTUREWHARF, 
+			ARRIVALPROVINCE, ARRIVALPORT, ARRIVALWHARF, RTRIM(to_char(DRAUGHT,'fm999999999999990.99'),'.') as DRAUGHT, LOADTIME, LOADINGTIME, DISCHARGETIME, BYTHEPIECE, BYWEIGH, ORIGINALBINDING, 
+			MOISTUREPROOF, ANTIPOLLUTION, OTHERINSTRUCTION, PACKAGETYPE, HARBORTOLLS, RTRIM(to_char(DEMURRAGE, 'fm999999999999990.99'),'.') as DEMURRAGE,
+			OTHERPRICE, ADDITIONALCONTENT, STATUS
+		from HJSD_GOODSSOURCE_INFO where GOODSSOURCEID=#goodsId#
+	</select>
+	
+	<!-- 查询我的竞标 (发标、竞标) -->
+	<select id="selectMyBidInfo" parameterClass="java.util.Map" resultClass="GoodsInfo">
+			select * from ( select temp.*,ROWNUM as rn from (
+					select #publish# as bidType, GOODSSOURCEID,NULL as GOODSBIDID, STATUS,NULL as BIDPRICE, BIDID, GOODSNAME,RTRIM(to_char(GOODSWEIGHT,'fm999999999999990.99'),'.') as GOODSWEIGHT, PICTUREPATH,
+						RTRIM(to_char(LIMITEDPRICE,'fm999999999999990.99'),'.') as LIMITEDPRICE,to_char(BIDOPENTIME,'YYYY-MM-DD HH24:MI') as BIDOPENTIME,DEPARTUREPROVINCE, DEPARTUREPORT, DEPARTUREWHARF, ARRIVALPROVINCE, ARRIVALPORT, ARRIVALWHARF,
+						(select count(1) from HJSD_GOODSBID_INFO where GOODSID=HJSD_GOODSSOURCE_INFO.GOODSSOURCEID and STATUS=#biding#) as BiddingNumber,PUBLISHTIME,NULL as shipName,NULL as shipId 
+					from HJSD_GOODSSOURCE_INFO where CREATEUSER=#userId# and STATUS in ( $goodsStatus$ ) 
+				union all
+					select #compete# as bidType,GOODSID as GOODSSOURCEID,bid.GOODSBIDID,
+						case when goods.STATUS=#goodsEnd# and bid.STATUS=#pay# then to_number(#failBid#) else bid.STATUS end as STATUS,
+						RTRIM(to_char(bid.BIDPRICE,'fm999999999999990.99'),'.') as BIDPRICE,goods.BIDID,goods.GOODSNAME,RTRIM(to_char(goods.GOODSWEIGHT,'fm999999999999990.99'),'.') as GOODSWEIGHT,goods.PICTUREPATH,
+						RTRIM(to_char(goods.LIMITEDPRICE,'fm999999999999990.99'),'.') as LIMITEDPRICE,to_char(goods.BIDOPENTIME,'YYYY-MM-DD HH24:MI') as BIDOPENTIME ,goods.DEPARTUREPROVINCE, goods.DEPARTUREPORT, goods.DEPARTUREWHARF, goods.ARRIVALPROVINCE, goods.ARRIVALPORT,
+						goods.ARRIVALWHARF ,0 as BiddingNumber,bid.CreateTime as PUBLISHTIME,ship.SHIPNAME as shipName,ship.shipId as shipId 
+					from HJSD_GoodsBid_Info bid 
+					inner join HJSD_GOODSSOURCE_INFO goods 
+					on goods.GOODSSOURCEID=bid.GOODSID 
+					left outer join HJSD_SHIP_INFO ship 
+					on ship.SHIPID=bid.SHIPID 
+					where bid.BidUser=#userId# and bid.Status in ( $shipStatus$ ) 
+				order by PUBLISHTIME desc
+				) temp ) 
+		<![CDATA[ where rn >= #rowMin# and rn <= #rowMax#]]>
+	</select>
+	
+	<!-- 通过条件查询货物(标) -->
+	<select id="selectGoodsInfoByCondition" parameterClass="java.util.Map" resultClass="GoodsInfo">
+		select * from ( select temp.*,ROWNUM as rn from (
+			select goods.BIDID,goods.GOODSSOURCEID, goods.GOODSNAME, RTRIM(to_char(goods.GOODSWEIGHT,'fm999999999999990.99'),'.') as GOODSWEIGHT, 
+					goods.DEPARTUREPORT, goods.ARRIVALPORT, RTRIM(to_char(goods.LIMITEDPRICE,'fm999999999999990.99'),'.') as LIMITEDPRICE, to_char(goods.BIDOPENTIME,'yyyy"年"MM"月"dd"日" hh24:mi') as BIDOPENTIME, 
+					RTRIM(to_char(goods.THEFIRSTPAYMENT,'fm999999999999990.99'),'.') as THEFIRSTPAYMENT,goods.CREATEUSER,
+					(select count(1) from HJSD_GOODSBID_INFO where GOODSID=goods.GOODSSOURCEID and STATUS=#biding#) as BiddingNumber,
+					case round((TO_DATE(To_char(goods.BIDOPENTIME , 'YYYY-MM-DD HH24:MI:SS'), 'YYYY-MM-DD HH24:MI:SS')-SYSDATE)) when 0 then 1 else
+					round((TO_DATE(To_char(goods.BIDOPENTIME , 'YYYY-MM-DD HH24:MI:SS'), 'YYYY-MM-DD HH24:MI:SS')-SYSDATE)) end as RemainingDays 
+					<isNotEmpty property="userId">
+						,case when bid.GOODSBIDID is not null then #apply# else #noApply# end as goodsStatus
+					</isNotEmpty>
+					<isEmpty property="userId">
+						,#noApply# as goodsStatus 
+					</isEmpty>
+			from HJSD_GOODSSOURCE_INFO goods
+			<isNotEmpty property="userId">
+				left outer join HJSD_GOODSBID_INFO bid on goods.GOODSSOURCEID=bid.GOODSID and bid.BIDUSER=#userId#
+			</isNotEmpty>
+			where goods.STATUS=#status# <![CDATA[ and goods.BIDOPENTIME>sysdate ]]>
+			<isNotEmpty property="departurePlace" prepend="AND">
+				 goods.DEPARTUREPORT = #departurePlace#
+			</isNotEmpty>
+			<isNotEmpty property="arrivalPlace" prepend="AND">
+				 goods.ARRIVALPORT = #arrivalPlace#
+			</isNotEmpty>
+			<isNotEmpty property="emptyTonnageMin" prepend="AND">
+				<![CDATA[ goods.GOODSWEIGHT >= #emptyTonnageMin# ]]>
+			</isNotEmpty>
+			<isNotEmpty property="emptyTonnageMax" prepend="AND">
+				<![CDATA[ goods.GOODSWEIGHT < #emptyTonnageMax# ]]>
+			</isNotEmpty>
+			order by goods.BIDID desc
+		<![CDATA[ ) temp ) where rn >= #rowMin# and rn <= #rowMax#]]>
+	</select>
+	<select id="selectGoodsInfoByCondition1" parameterClass="java.util.Map" resultClass="hashmap">
+		select * from ( select temp.*,ROWNUM as rn from (
+			select t."ID",t.GOODSWEIGHT||'吨'||t.GOODSNAME as goodName,t.DEPARTUREPROVINCE,t.ARRIVALPROVINCE,to_char(t.LOADTIME,'yyyy-mm-dd')||' 装货' as loadDate,t1.NAME,
+			t1."CATEGORY",t.SOURCE,T1.AVATAR
+			FROM WX_GOODSSOURCE t INNER JOIN WX_USER t1 on t.CREATEUSER=t1.OPENID
+			where t.STATUS=#status#
+			<isNotEmpty property="departurePlace" prepend="AND">
+				 t.DEPARTUREPROVINCE = #departurePlace#
+			</isNotEmpty>
+			<isNotEmpty property="arrivalPlace" prepend="AND">
+				 t.ARRIVALPROVINCE = #arrivalPlace#
+			</isNotEmpty>
+			<isNotEmpty property="emptyTonnageMin" prepend="AND">
+				<![CDATA[ t.GOODSWEIGHT >= #emptyTonnageMin# ]]>
+			</isNotEmpty>
+			<isNotEmpty property="emptyTonnageMax" prepend="AND">
+				<![CDATA[ t.GOODSWEIGHT < #emptyTonnageMax# ]]>
+			</isNotEmpty>
+			order by t.CREATEDATE desc
+		<![CDATA[ ) temp ) where rn >= #rowMin# and rn <= #rowMax#]]>
+	</select>
+	<select id="queryAll" parameterClass="java.util.Map" resultClass="hashmap">
+		select * from ( select temp.*,ROWNUM as rn from (
+			select *
+			from HJSD_GOODSSOURCE_INFO goods
+			order by goods.BIDID desc
+		<![CDATA[ ) temp ) where rn >= #rowMin# and rn <= #rowMax#]]>
+	</select>
+	
+	<select id="getGoodsName" resultClass="hashmap">
+		select * from wx_goods_name order by createdate
+	</select>
+	
+	<select id="getGoodsDetail" parameterClass="java.lang.String" resultClass="hashmap">
+		select t.GOODSNAME,t.GOODSWEIGHT,t.DEPARTUREPROVINCE,t.DEPARTUREWHARF,t.ARRIVALPROVINCE,t.ARRIVALWHARF,
+		t.FREIGHTPRICE,to_char(t.LOADTIME,'yyyy-mm-dd') as loadDate,to_char(t.XHRQ,'yyyy-mm-dd') as XHRQ,t.LOADINGTIME,t.DISCHARGETIME,t.DELAYRPRICE,t."SOURCE",t.REMARK,
+		T1.MOBILE,T1.STAR,T1."NAME",T1."CATEGORY",T1.COMPANY_NAME,T1.AVATAR,t.STATUS
+		FROM WX_GOODSSOURCE t INNER JOIN WX_USER t1 on t.CREATEUSER=t1.OPENID
+		where t."ID"=#id#
+	</select>
+	
+	
+	<!-- 通过id查询标书详情 -->
+	<select id="selectBidDetailById" parameterClass="java.util.Map" resultClass="GoodsInfo">
+		select goods.BIDID, goods.GOODSSOURCEID, goods.GOODSNAME, goods.GOODSTYPE, RTRIM(to_char(goods.GOODSWEIGHT,'fm999999999999990.99'),'.') as GOODSWEIGHT, goods.PICTUREPATH, 
+				goods.DEPARTUREPROVINCE, goods.DEPARTUREPORT, goods.DEPARTUREWHARF, 
+				goods.ARRIVALPROVINCE, goods.ARRIVALPORT, goods.ARRIVALWHARF, RTRIM(to_char(goods.DRAUGHT,'fm999999999999990.99'),'.') as DRAUGHT, to_char(goods.LOADTIME,'yyyy-MM-dd') as LOADTIME, goods.LOADINGTIME, goods.DISCHARGETIME, 
+				substr(decode(goods.BYTHEPIECE,#demand#,'、'||#byThePiece#)||decode(goods.ORIGINALBINDING,#demand#,'、'||#byWeigh#)||
+				decode(goods.ORIGINALBINDING,#demand#,'、'||#originalBinding#)||decode(goods.MOISTUREPROOF,#demand#,'、'||#moistureProof#)||
+				decode(goods.ANTIPOLLUTION,#demand#,'、'||#antiPollution#),2) as loadingDemand,
+				goods.OTHERINSTRUCTION, goods.PACKAGETYPE, goods.PAYTYPE, RTRIM(to_char(goods.LIMITEDPRICE,'fm999999999999990.99'),'.') as LIMITEDPRICE, goods.HARBORTOLLS, RTRIM(to_char(goods.DEMURRAGE,'fm999999999999990.99'),'.') as DEMURRAGE, goods.OTHERPRICE, 
+				to_char(goods.BIDOPENTIME,'yyyy-MM-dd hh24:mi') as BIDOPENTIME, goods.ADDITIONALCONTENT, RTRIM(to_char(goods.THEFIRSTPAYMENT,'fm999999999999990.99'),'.') as THEFIRSTPAYMENT,goods.CREATEUSER,
+				(select count(1) from HJSD_GOODSBID_INFO where GOODSID=goods.GOODSSOURCEID and STATUS=#biding#) as BiddingNumber
+				<isNotEmpty property="userId">
+					,case when bid.GOODSBIDID is not null then #apply# else #noApply# end as goodsStatus
+				</isNotEmpty>
+				<isEmpty property="userId">
+					,#noApply# as goodsStatus 
+				</isEmpty>
+				,admins.NAME as adminName,admins.USERTEL as adminTel
+		from HJSD_GOODSSOURCE_INFO goods 
+		<isNotEmpty property="userId">
+			left outer join HJSD_GOODSBID_INFO bid on goods.GOODSSOURCEID=bid.GOODSID and bid.BIDUSER=#userId#
+		</isNotEmpty>
+		left outer join HJSD_ADMINISTRATOR_INFO admins
+		on admins.USERID=goods.ADMINID
+		where goods.GOODSSOURCEID=#goodsId#
+	</select>
+	
+	<!-- 增加货物信息 -->
+ 	<insert id="createGoodsInfo" parameterClass="java.util.Map">
+		insert into WX_GOODSSOURCE(ID,
+			GOODSNAME, GOODSWEIGHT,DEPARTUREPROVINCE, DEPARTUREWHARF, 
+			ARRIVALPROVINCE, ARRIVALWHARF, FREIGHTPRICE, LOADTIME, LOADINGTIME,
+			DISCHARGETIME, DELAYRPRICE, CREATEUSER, STATUS,SOURCE,REMARK,CREATEDATE,XHRQ
+		) values(#ID#,#GOODSNAME#,#GOODSWEIGHT#,#DEPARTUREPROVINCE#,#DEPARTUREWHARF#,#ARRIVALPROVINCE#,
+				#ARRIVALWHARF#,#FREIGHTPRICE#,TO_DATE(#LOADTIME#,'yyyy-MM-dd hh24:mi:ss'),#LOADINGTIME#,#DISCHARGETIME#,#DELAYRPRICE#,#CREATEUSER#,#STATUS#,
+				#SOURCE#,#REMARK#,
+				sysdate,#XHRQ#)
+	</insert>
+	
+	<!-- 删除货物信息 -->
+ 	<delete id="deleteGoodsInfo" parameterClass="java.lang.String">
+		delete from HJSD_GOODSSOURCE_INFO where GOODSSOURCEID=#goodsId#
+	</delete>
+	
+	<!-- 更新货物信息 -->
+	<update id="updateGoodsInfo" parameterClass="GoodsInfo">
+		update HJSD_GOODSSOURCE_INFO set GOODSNAME=#goodsName#,
+				GOODSTYPE=#goodsType#, 
+				DEPARTUREPROVINCE=#departureProvince#, 
+				DEPARTUREPORT=#departurePort#, 
+				DEPARTUREWHARF=#departureWharf#, 
+				ARRIVALPROVINCE=#arrivalProvince#, 
+				ARRIVALPORT=#arrivalPort#, 
+				ARRIVALWHARF=#arrivalWharf#, 
+				DRAUGHT=#draught#, 
+				LOADTIME=to_timestamp(#loadTime#,'yyyy-mm-dd hh24:mi:ss.ff'), 
+				LOADINGTIME=#loadingTime#, 
+				DISCHARGETIME=#dischargeTime#, 
+				BYTHEPIECE=#byThePiece#, 
+				BYWEIGH=#byWeigh#, 
+				ORIGINALBINDING=#originalBinding#, 
+				MOISTUREPROOF=#moistureProof#, 
+				ANTIPOLLUTION=#antiPollution#, 
+				OTHERINSTRUCTION=#otherInstruction#, 
+				PACKAGETYPE=#packageType#, 
+				HARBORTOLLS=#harborTolls#, 
+				DEMURRAGE=trunc(#demurrage#,2), 
+				OTHERPRICE=#otherPrice#, 
+				ADDITIONALCONTENT=#additionalContent#, 
+				PUBLISHTIME=sysdate,
+				STATUS=#status#
+		where GOODSSOURCEID=#goodsSourceId#
+	</update>
+	
+	<!-- 更新货物信息 -->
+	<update id="updateGoods" parameterClass="java.util.Map">
+		update WX_GOODSSOURCE set 
+				GOODSNAME=#GOODSNAME#,
+				GOODSWEIGHT=#GOODSWEIGHT#,
+				DEPARTUREPROVINCE=#DEPARTUREPROVINCE#, 
+				DEPARTUREWHARF=#DEPARTUREWHARF#, 
+				ARRIVALPROVINCE=#ARRIVALPROVINCE#, 
+				ARRIVALWHARF=#ARRIVALWHARF#, 
+				LOADTIME=to_timestamp(#LOADTIME#,'yyyy-mm-dd hh24:mi:ss'), 
+				XHRQ=to_timestamp(#XHRQ#,'yyyy-mm-dd hh24:mi:ss'), 
+				LOADINGTIME=#LOADINGTIME#, 
+				DISCHARGETIME=#DISCHARGETIME#, 
+				FREIGHTPRICE=#FREIGHTPRICE#, 
+				STATUS=#STATUS#,
+				SOURCE=#SOURCE#,
+				REMARK=#REMARK#,
+				DELAYRPRICE=#DELAYRPRICE#,
+				CREATEDATE= sysdate
+		where ID=#ID#
+	</update>
+	
+	<!-- 更新货物信息 -->
+	<update id="deleteGoods" parameterClass="java.lang.String">
+		delete from  WX_GOODSSOURCE
+		where ID=#id#
+	</update>
+	
+	<!-- 创建标书 -->
+	<update id="createBidInfo" parameterClass="GoodsInfo">
+		update HJSD_GOODSSOURCE_INFO set 
+				BIDID='HJSD'||to_char(sysdate,'yyyyMMdd')||lpad(BIDID_SEQ.NEXTVAL,4,'0'),
+				LIMITEDPRICE=trunc(#limitedPrice#,2),
+				GOODSWEIGHT=#goodsWeight#, 
+				BIDOPENTIME=to_timestamp(#bidOpenTime#,'yyyy-mm-dd hh24:mi:ss.ff'), 
+				THEFIRSTPAYMENT=#theFirstPayment#,
+				PAYTYPE=#payType#,
+				PUBLISHTIME=sysdate,
+				STATUS=#status#
+		where GOODSSOURCEID=#goodsSourceId#
+	</update>
+	
+	<!-- 查询竞标人数 -->
+	<select id="selectBiddingNumber" parameterClass="java.util.Map" resultClass="java.lang.Integer">
+		select count(1) from HJSD_GOODSBID_INFO bid 
+		inner join HJSD_GOODSSOURCE_INFO goods on goods.GOODSSOURCEID=bid.GOODSID and <![CDATA[goods.STATUS<>#failbid#]]> 
+		where bid.GOODSID=#goodsId#
+	</select>
+	
+	<!-- 撤标（发标） -->
+	<update id="deleteMyBidById" parameterClass="java.util.Map">
+		update HJSD_GOODSSOURCE_INFO set STATUS=decode(STATUS,#failbid#,#failbidnoshow#,#status#) where GOODSSOURCEID=#goodsId#
+	</update>
+
+	<!-- 创建竞价信息 -->
+	<insert id="createGoodsBidInfo" parameterClass="java.util.Map">
+		insert into HJSD_GOODSBID_INFO (GOODSBIDID, GOODSID, BIDUSER, SHIPID, BIDPRICE, BIDDEPOSIT, CREATETIME, STATUS) 
+		select #goodsBidId#, #goodsId#,#bidUser#,#shipId#,#bidPrice#,trunc(LIMITEDPRICE*GOODSWEIGHT*#depositPercent#),sysdate,case when PAYTYPE=#onLine# then #biding# else #pay# end as status from HJSD_GOODSSOURCE_INFO 
+		where GOODSSOURCEID=#goodsId#
+		<selectKey resultClass="int" keyProperty="goodsBidId">
+			SELECT GOODSBIDID_SEQ.CURRVAL AS goodsBidId FROM DUAL  
+		</selectKey>  
+	</insert>
+	
+	<!-- 删除船运申请 -->
+	<delete id="deleteShipApply" parameterClass="java.lang.String">
+		delete from HJSD_SHIPAPPLY_INFO where SHIPAPPLYID=#shipApplyId#
+	</delete>
+	
+	<!-- 根据船运申请id修改货物状态 -->
+	<update id="updateGoodsStatusByApplyId" parameterClass="java.util.Map">
+		update HJSD_GOODSSOURCE_INFO set STATUS=#status# where GOODSSOURCEID =
+    		(select goods.GOODSSOURCEID from HJSD_GOODSSOURCE_INFO goods 
+			inner join HJSD_SHIPAPPLY_INFO apply on apply.SHIPAPPLYID=#shipApplyId# and apply.GOODSSOURCEID=goods.GOODSSOURCEID)
+	</update>
+	
+	<!-- 查询我的船运（申请/被申请） -->
+	<select id="selectShipApplyInfo" parameterClass="java.util.Map" resultClass="ApplyShipping">
+		select * from ( select temp.*,ROWNUM as rn from (
+			select case when apply.STATUS= #status# then #apply# else #assign# end as ApplyStatus,null as GOODSSOURCEID,goods.GOODSNAME,goods.PICTUREPATH,ship.SHIPID,
+				ship.SHIPNAME,goods.DEPARTUREPORT,goods.ARRIVALPORT,RTRIM(to_char(goods.FREIGHTPRICE,'fm999999999999990.99'),'.') as FREIGHTPRICE,apply.SHIPAPPLYID,apply.APPLYTIME from HJSD_SHIPAPPLY_INFO apply 
+			inner join HJSD_GOODSSOURCE_INFO goods on apply.GOODSSOURCEID=goods.GOODSSOURCEID 
+			inner join HJSD_SHIP_INFO ship on ship.SHIPID=apply.SHIPID
+			where apply.ApplyUser=#userId# 
+			UNION all
+			select case when apply.STATUS=#status# then #beApply# else #assign# end as ApplyStatus,apply.GOODSSOURCEID,goods.GOODSNAME,goods.PICTUREPATH,ship.SHIPID,
+				ship.SHIPNAME,goods.DEPARTUREPORT,goods.ARRIVALPORT,RTRIM(to_char(goods.FREIGHTPRICE,'fm999999999999990.99'),'.') as FREIGHTPRICE,apply.SHIPAPPLYID,apply.APPLYTIME from HJSD_SHIPAPPLY_INFO apply 
+			inner join HJSD_GOODSSOURCE_INFO goods on apply.GOODSSOURCEID=goods.GOODSSOURCEID 
+			inner join HJSD_SHIP_INFO ship on ship.SHIPID=apply.SHIPID
+			where apply.Shipowner=#userId# 
+			order by APPLYTIME desc
+		 ) temp ) 
+		<![CDATA[ where rn >= #rowMin# and rn <= #rowMax#]]>
+	</select>
+
+	<!-- 修改船运申请状态 -->
+	<update id="updateShipApply" parameterClass="java.util.Map">
+		update HJSD_SHIPAPPLY_INFO set STATUS=#status#
+		where SHIPAPPLYID=#shipApplyId#
+	</update>
+	
+	<!-- 删除其他申请 -->
+	<delete id="deleteOtherApply" parameterClass="java.util.Map">
+		delete from HJSD_SHIPAPPLY_INFO where SHIPID=#shipId# and status=#status#
+	</delete>
+	
+	<!-- 修改船只状态 -->
+	<update id="updateShipStatus" parameterClass="java.util.Map">
+		update HJSD_SHIP_INFO set STATUS=#status# where SHIPID=#shipId#
+	</update>
+	
+	<!-- 根据ID删除竞标信息 -->
+	<delete id="deleteGoodsBidInfoById" parameterClass="java.lang.String">
+		delete from HJSD_GoodsBid_Info where GOODSBIDID=#goodsBidId#
+	</delete>
+	
+	<!-- 通过id判断标标是否存在或过期（开标时间小于等于当前） -->
+	<select id="selectBidCount" parameterClass="java.util.Map" resultClass="java.lang.Integer">
+		select count(1) as count from HJSD_GOODSSOURCE_INFO where GOODSSOURCEID=#goodsId# and STATUS=#status# and BIDOPENTIME>sysdate
+	</select>
+	
+	<!-- 查询我的船运（申请/被申请）详情 -->
+	<select id="selectShipApplyDetailInfo" parameterClass="java.lang.String" resultClass="ShipOrderInfo">
+		select goods.DEPARTUREPORT,goods.DEPARTUREWHARF,goods.ARRIVALPORT,goods.ARRIVALWHARF,RTRIM(to_char(goods.FREIGHTPRICE,'fm999999999999990.99'),'.') as FREIGHTPRICE,goods.GOODSSOURCEID,
+			RTRIM(to_char(goods.THEFIRSTPAYMENT,'fm999999999999990.99'),'.') as THEFIRSTPAYMENT,goods.PAYTYPE,users.USERNAME as shipUserName,users.USERTEL as shipUserTel,goods.GOODSNAME,goods.PICTUREPATH,
+			RTRIM(to_char(goods.GOODSWEIGHT,'fm999999999999990.99'),'.') as GOODSWEIGHT,userg.USERNAME as goodsUserName,userg.USERTEL as goodsUserTel,ship.SHIPNAME
+		from HJSD_SHIPAPPLY_INFO apply 
+		left outer join HJSD_GOODSSOURCE_INFO goods on goods.GOODSSOURCEID=apply.GOODSSOURCEID
+		left outer join HJSD_USER_INFO users on users.USERID=apply.SHIPOWNER
+		left outer join HJSD_USER_INFO userg on userg.USERID=apply.APPLYUSER
+		left outer join HJSD_SHIP_INFO ship on ship.SHIPID=apply.SHIPID
+		where apply.SHIPAPPLYID=#shipApplyId#
+	</select>
+	
+	<!-- 查询船状态 -->
+	<select id="selectShipStatus" parameterClass="java.lang.String" resultClass="java.lang.Integer">
+		select STATUS from HJSD_SHIP_INFO where SHIPID=#shipId#
+	</select>
+	
+	<!-- 船运申请是否存在 -->
+	<select id="selectShipApply" parameterClass="java.lang.String" resultClass="java.lang.Integer">
+		select count(1) from HJSD_SHIPAPPLY_INFO where SHIPAPPLYID=#shipApplyId#
+	</select>
+		
+	<!-- 创建备份货物 -->
+	<insert id="createBakGoodsInfo" parameterClass="java.lang.String">
+		insert into HJSD_GOODSSOURCE_INFO (
+			GOODSNAME,GOODSTYPE,GOODSWEIGHT,PICTUREPATH,DEPARTUREPROVINCE,DEPARTUREPORT,DEPARTUREWHARF,ARRIVALPROVINCE,ARRIVALPORT,ARRIVALWHARF,
+			DRAUGHT,LOADTIME,LOADINGTIME,DISCHARGETIME,BYTHEPIECE,BYWEIGH,ORIGINALBINDING,MOISTUREPROOF,ANTIPOLLUTION,OTHERINSTRUCTION,PACKAGETYPE,
+			PAYTYPE,LIMITEDPRICE,HARBORTOLLS,DEMURRAGE,OTHERPRICE,BIDOPENTIME,ADDITIONALCONTENT,THEFIRSTPAYMENT,CREATEUSER,PUBLISHTIME,STATUS,
+			ADMINID,FREIGHTPRICE) 
+		select GOODSNAME,GOODSTYPE,GOODSWEIGHT,PICTUREPATH,DEPARTUREPROVINCE,DEPARTUREPORT,DEPARTUREWHARF,ARRIVALPROVINCE,ARRIVALPORT,ARRIVALWHARF,
+			DRAUGHT,LOADTIME,LOADINGTIME,DISCHARGETIME,BYTHEPIECE,BYWEIGH,ORIGINALBINDING,MOISTUREPROOF,ANTIPOLLUTION,OTHERINSTRUCTION,PACKAGETYPE,
+			PAYTYPE,LIMITEDPRICE,HARBORTOLLS,DEMURRAGE,OTHERPRICE,BIDOPENTIME,ADDITIONALCONTENT,THEFIRSTPAYMENT,CREATEUSER,PUBLISHTIME,STATUS,
+			ADMINID,FREIGHTPRICE
+			from HJSD_GOODSSOURCE_INFO where GOODSSOURCEID=#goodsSourceId#
+	</insert>
+	
+	<select id="myGoods" parameterClass="java.util.Map" resultClass="hashmap">
+	
+		select * from ( select temp.*,ROWNUM as rn from (
+			select t."ID",t.GOODSWEIGHT,t.GOODSNAME,t.DEPARTUREPROVINCE||', '||t.DEPARTUREWHARF as DEPARTUREWHARF,t.ARRIVALPROVINCE||', '||t.ARRIVALWHARF as ARRIVALWHARF,to_char(t.LOADTIME,'yyyy-mm-dd')||' 装货' as loadDate,t.status
+			FROM WX_GOODSSOURCE t
+			where t.CREATEUSER=#userId#
+		<![CDATA[ ) temp ) where rn >= #rowMin# and rn <= #rowMax#]]>
+	</select>
+	
+	<select id="getData" resultClass="hashmap">
+		select * from wx_data
+	</select>
+	<insert id="createData" parameterClass="java.util.Map">
+		insert into wx_data values (#id#,#one#,#two#,#three#,#four#)
+	</insert>
+	<!-- 根据ID删除竞标信息 -->
+	<delete id="deleteData">
+		delete from wx_data
+	</delete>
+</sqlMap>

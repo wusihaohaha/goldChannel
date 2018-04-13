@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="PubParameterSelect">
+	<typeAlias alias="AddressInfo" type="com.golden.pubParameter.po.AddressInfo" />
+
+	<!-- 获取图片保存的根目录 -->
+	<select id="getCouponPicRoot" parameterClass="java.lang.String" resultClass="java.lang.String">
+		select p_value from hjsd_file_root where p_id =#p_id#
+	</select>
+	
+	<!-- 查询省下的港口 -->
+	<select id="selectPortByProvince" parameterClass="java.lang.String" resultClass="AddressInfo">
+		select D_KEY,D_VALUE from HJSD_DICTIONARY_ADDRESS where PARENTKEY in(select D_KEY from HJSD_DICTIONARY_ADDRESS where PARENTKEY=#key#) order by D_KEY
+	</select>
+	
+	<!-- 通过父key查询子地址 -->
+	<select id="selectAddressByParentkey" parameterClass="java.lang.String" resultClass="AddressInfo">
+		select D_KEY,D_VALUE from HJSD_DICTIONARY_ADDRESS where PARENTKEY=#key# order by D_KEY
+	</select>
+
+	<!-- 查询所有港口及与省的关联  -->
+	<select id="selectAllPortInfo" resultClass="AddressInfo">
+		SELECT TEMP.D_KEY,TEMP.D_VALUE,ADDRESS.PARENTKEY
+		FROM  HJSD_DICTIONARY_ADDRESS ADDRESS  INNER JOIN 
+		(SELECT D_KEY,D_VALUE,PARENTKEY FROM HJSD_DICTIONARY_ADDRESS WHERE PARENTKEY IN
+			(SELECT D_KEY FROM HJSD_DICTIONARY_ADDRESS WHERE PARENTKEY IN (SELECT D_KEY FROM HJSD_DICTIONARY_ADDRESS WHERE PARENTKEY=0))
+		) TEMP ON TEMP.PARENTKEY=ADDRESS.D_KEY order by D_KEY
+	</select>
+	
+	<!-- 查询所有省/市/港口/码头-->
+	<select id="selectAllInfo" parameterClass="java.lang.String" resultClass="AddressInfo">
+		select D_KEY,D_VALUE,PARENTKEY from HJSD_DICTIONARY_ADDRESS where TYPE=#type# order by D_KEY
+	</select>
+	
+	<!-- 添加码头 -->
+	<insert id="createWharf" parameterClass="java.util.Map">
+		 insert into HJSD_DICTIONARY_ADDRESS (D_VALUE,PARENTKEY,TYPE) values(#wharf#,#parentKey#,#addressType#)
+	</insert>
+	
+</sqlMap>

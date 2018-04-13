@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="OrderInfoSqlMap">
+	<typeAlias alias="ShipOrderInfo" type="com.golden.order.po.ShipOrderInfo" />
+
+	<!-- 查询我的订单 -->
+	<select id="selectMyOrder" parameterClass="java.util.Map" resultClass="ShipOrderInfo">
+		select * from ( select temp.*,
+						case when temp.role=#ship# then 
+							case when temp.SYSTEMSTATUS=#goodsOrderOne# then case when <![CDATA[temp.operateStatusTemp <=#shipAudit# ]]> then temp.operateStatusTemp else to_number(#shipAudit#) end
+         						 when temp.SYSTEMSTATUS=#goodsOrderTwo# then case when <![CDATA[temp.operateStatusTemp <=#firstConfirm# ]]> or temp.operateStatusTemp=#operateStatusSix# then temp.operateStatusTemp else to_number(#operateStatusSix#) end
+         						 when temp.SYSTEMSTATUS=#goodsOrderThree# then temp.operateStatusTemp end 
+						else temp.operateStatusTemp end as operateStatus, 
+			ROWNUM as rn from (
+			select orders.ORDERID,RTRIM(to_char(orders.THEFIRSTPAYMENT,'fm999999999999990.99'),'.') as THEFIRSTPAYMENT,RTRIM(to_char((orders.AMOUNT-orders.THEFIRSTPAYMENT),'fm999999999999990.99'),'.') as lastPay,orders.SYSTEMSTATUS, 
+				case when orders.GOODSUSER=#userId# then #goods# else #ship# end as role,goods.PAYTYPE, 
+ 				case when orders.GOODSUSER=#userId# then  
+            		case when <![CDATA[ orders.GOODSSTATUS>#goodsAudit# and orders.SHIPSTATUS<=#shipAudit# ]]> then to_number(#goodsAudit#) else orders.GOODSSTATUS end 
+        		else case when <![CDATA[ orders.SHIPSTATUS<=#shipAudit# ]]> then orders.SHIPSTATUS 
+                  		  when <![CDATA[ orders.SHIPSTATUS>#shipAudit# and orders.GOODSSTATUS<=#goodsAudit# ]]> then to_number(#goodsAudit#) 
+                  		  when orders.GOODSSTATUS=orders.SHIPSTATUS and orders.SHIPSTATUS=#lastConfirm# then to_number(#operateStatusSix#)
+                          when  <![CDATA[ orders.GOODSSTATUS<= orders.SHIPSTATUS and orders.SHIPSTATUS>=#firstConfirm# and orders.SHIPSTATUS <=#lastConfirm# ]]> then orders.GOODSSTATUS-1
+                          else orders.SHIPSTATUS end 
+        		end as operateStatusTemp, 
+         		case when orders.GOODSUSER=#userId# then 
+            		 case when <![CDATA[ orders.GOODSSTATUS >=#firstPay# and orders.SHIPSTATUS<=#shipAudit# ]]> then to_number(#goodsAudit#) 
+                 		  when <![CDATA[ orders.GOODSSTATUS >#firstPay# ]]> then orders.GOODSSTATUS-1 else orders.GOODSSTATUS end 
+        		else case when <![CDATA[ orders.SHIPSTATUS >=#firstConfirm# and orders.GOODSSTATUS<=#goodsAudit# ]]> then to_number(#shipAudit#) 
+                  		  when <![CDATA[ orders.SHIPSTATUS >#firstConfirm# ]]> then orders.SHIPSTATUS-1 else orders.SHIPSTATUS end 
+        		end as orderStatus,
+				goods.GOODSNAME,goods.PICTUREPATH,goods.DEPARTUREPORT,goods.ARRIVALPORT,ship.SHIPNAME,shipping.LOCATION 
+			from HJSD_SHIPPINGORDER_INFO orders 
+			inner join HJSD_GOODSSOURCE_INFO goods on goods.GOODSSOURCEID=orders.GOODSSOURCEID 
+			inner join HJSD_SHIP_INFO ship on ship.SHIPID=orders.SHIPID 
+			left outer join HJSD_SHIPPING_INFO shipping on shipping.ORDERID=orders.ORDERID 
+			where (orders.GOODSUSER=#userId# and <![CDATA[ orders.GOODSSTATUS<>#goodsStatus# ]]>) or (orders.SHIPUSER=#userId# and <![CDATA[ orders.SHIPSTATUS<>#shipStatus# ]]>) 
+			order by orders.ORDERID desc
+		<![CDATA[ ) temp ) where rn >= #rowMin# and rn <= #rowMax#]]>
+	</select>
+	
+	<!-- 更新合同文件 -->
+	<update id="updateBidFile" parameterClass="java.util.Map">
+		update HJSD_SHIPPINGORDER_INFO set 
+			GOODSBIDFILEPATH=decode(GOODSUSER,#userId#,#filePath#,GOODSBIDFILEPATH), 
+			SHIPBIDFILEPATH=decode(SHIPUSER,#userId#,#filePath#,SHIPBIDFILEPATH), 
+			GOODSSTATUS=decode(GOODSUSER,#userId#,#goodsStatus#,GOODSSTATUS), 
+			SHIPSTATUS=decode(SHIPUSER,#userId#,#shipStatus#,SHIPSTATUS) 
+		where ORDERID=#orderId#
+	</update>
+	
+	<!-- 查询合同文件 -->
+	<select id="selectBidFile" parameterClass="java.util.Map" resultClass="ShipOrderInfo">
+		select GOODSBIDFILEPATH, SHIPBIDFILEPATH from HJSD_SHIPPINGORDER_INFO where ORDERID=#orderId#
+	</select>
+	
+	<!-- 更新订单状态 -->
+	<update id="updateOrderStatus" parameterClass="java.util.Map">
+		update HJSD_SHIPPINGORDER_INFO set 
+			<isNotEmpty property="goodsStatus">
+				GOODSSTATUS=#goodsStatus# 
+			</isNotEmpty>
+			<isNotEmpty property="shipStatus">
+				SHIPSTATUS=#shipStatus# 
+			</isNotEmpty>
+		where ORDERID=#orderId#
+	</update>
+	
+	<!-- 查看订单详情 -->
+	<select id="selectOrderDetailInfo" parameterClass="java.util.Map" resultClass="ShipOrderInfo">
+		select orders.ORDERID,case when #role#=#goods# then case when <![CDATA[ orders.GOODSSTATUS >#firstPay# ]]> then orders.GOODSSTATUS-1 else orders.GOODSSTATUS end 
+			else case when <![CDATA[ orders.SHIPSTATUS >#firstConfirm# ]]> then orders.SHIPSTATUS-1 else orders.SHIPSTATUS end end as orderStatus, orders.SYSTEMSTATUS,
+			goods.GOODSSOURCEID,goods.GOODSNAME,goods.PICTUREPATH,RTRIM(to_char(goods.GOODSWEIGHT,'fm999999999999990.99'),'.') as GOODSWEIGHT,goods.DEPARTUREPORT,goods.DEPARTUREWHARF,
+			goods.ARRIVALPORT,goods.ARRIVALWHARF,RTRIM(to_char(goods.FREIGHTPRICE,'fm999999999999990.99'),'.') as FREIGHTPRICE, 
+			RTRIM(to_char(orders.THEFIRSTPAYMENT,'fm999999999999990.99'),'.') as THEFIRSTPAYMENT,goods.PAYTYPE, 
+			guser.USERNAME as goodsUserName,guser.USERTEL as goodsUserTel,suser.USERNAME as shipUserName,suser.USERTEL as shipUserTel,ship.SHIPNAME,
+			admins.NAME as adminName,admins.USERTEL as adminTel 
+		from HJSD_SHIPPINGORDER_INFO orders 
+		inner join HJSD_GOODSSOURCE_INFO goods on goods.GOODSSOURCEID=orders.GOODSSOURCEID 
+		inner join HJSD_SHIP_INFO ship on ship.SHIPID=orders.SHIPID 
+		inner join HJSD_USER_INFO guser on guser.USERID=orders.GOODSUSER 
+		inner join HJSD_USER_INFO suser on suser.USERID=orders.SHIPUSER 
+		left outer join HJSD_ADMINISTRATOR_INFO admins on admins.USERID=goods.ADMINID 
+		where orders.ORDERID=#orderId#
+	</select>
+	
+	<!-- 通过订单id修改船状态 -->
+	<update id="updateShipStatusByOrderId" parameterClass="java.util.Map">
+		update  HJSD_SHIP_INFO set STATUS=#shipStatus# where SHIPID = 
+		(select ship.SHIPID from HJSD_SHIP_INFO ship 
+		inner join HJSD_SHIPPINGORDER_INFO orders on orders.ORDERID=#orderId# and orders.SHIPID=ship.SHIPID)
+	</update>
+</sqlMap>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation=" http://www.springframework.org/schema/beans
+		   http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-3.0.xsd
+           http://www.springframework.org/schema/mvc
+           http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
+
+	<!-- 启动扫描所有的controller -->
+	<context:component-scan base-package="com.golden.*" >
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+ 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Service" />
+	</context:component-scan>
+
+	<!-- 主要作用于@Controller，激活该模式 下面是一种简写形式，完全可以手动配置替代这种简写形式； 它会自动注册DefaultAnnotationHandlerMapping与AnnotationMethodHandlerAdapter 两个bean, 是spring MVC为@Controllers分发请求所必须的 -->
+	<mvc:annotation-driven />
+	
+
+	<!-- 这里拦截器还有一种配置方法【针对路径进行配置】 推荐使用这个，方便直观 -->   
+	<!-- 全局配置-->
+	<mvc:interceptors>
+	   <bean class="com.golden.common.interceptor.LoginInterceptor">
+	   <property name="iURL">
+	       <list>
+	           <!-- 首页 -->
+	           <value>.*/index</value>
+	       </list>
+       </property>
+	   </bean> 
+	</mvc:interceptors>
+	
+	<!-- 配置js，css等静态文件直接映射到对应的文件夹，不被DispatcherServlet处理 -->
+	<mvc:resources mapping="/resources/**" location="/WEB-INF/resources/"  />
+	
+	<!-- 配置 文件上传的支持 -->  
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+    	<property name="defaultEncoding" value="UTF-8"/>  
+	    <property name="maxUploadSize" value="1024000000"/>  
+	    <property name="resolveLazily" value="true"/> 
+    </bean>
+	 
+	<!-- jsp页面解析器，当Controller返回XXX字符串时，先通过拦截器，然后该类就会在/WEB-INF/views/目录下，查找XXX.jsp文件 -->
+	<bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/jsp/"></property>
+		<property name="suffix" value=".jsp"></property>
+	</bean>
+	
+	<!-- 全局异常配置 start -->    
+     <bean id="exceptionResolver" class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">    
+         <property name="exceptionMappings">    
+             <props>    
+                 <prop key="java.lang.Exception">errors/error</prop>    
+                 <prop key="java.lang.Throwable">errors/err</prop>    
+             </props>    
+         </property>    
+         <property name="statusCodes">    
+             <props>    
+                 <prop key="errors/error">500</prop>    
+                 <prop key="errors/404">404</prop>    
+             </props>    
+         </property>    
+         <!-- 设置日志输出级别，不定义则默认不输出警告等错误日志信息 -->    
+         <property name="warnLogCategory" value="WARN"></property>    
+         <!-- 默认错误页面，当找不到上面mappings中指定的异常对应视图时，使用本默认配置 -->    
+         <property name="defaultErrorView" value="errors/error"></property>    
+         <!-- 默认HTTP状态码 -->    
+         <property name="defaultStatusCode" value="500"></property>    
+     </bean>    
+     <!-- 全局异常配置 end --> 
+</beans>

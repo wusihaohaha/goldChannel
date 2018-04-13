@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="search">
+	<typeAlias alias="ShipCommonInfo" type="com.golden.search.po.ShipCommonInfo" />
+	<typeAlias alias="PartsInfo" type="com.golden.search.po.PartsInfo" />
+	<typeAlias alias="ShipDealInfo" type="com.golden.search.po.ShipDealInfo" />
+	<typeAlias alias="Material" type="com.golden.search.po.Material" />
+	<typeAlias alias="NoticeInfo" type="com.golden.search.po.NoticeInfo" />
+	<typeAlias alias="Ship" type="com.golden.ship.po.Ship" />
+	<typeAlias alias="HomeInfo" type="com.golden.search.po.HomeInfo" />
+	<typeAlias alias="ApkVersionInfo" type="com.golden.search.po.ApkVersionInfo" />
+	<typeAlias alias="OilInfo" type="com.golden.search.po.OilInfo" />
+	
+	<!-- 查询运联盟信息列表 -->
+	<select id="queryShipMembersBytype" parameterClass="java.util.Map" resultClass="ShipCommonInfo">
+		select shipname,shipimg from
+			(select rownum as rn,t.* from
+				(select membername as shipname,picturepath as shipimg
+				from hjsd_alliancemember_info
+				where membertype=#membertype#
+					order by SORT,MEMBERID) t )
+		where 1=1
+		and
+		<![CDATA[ 
+		rn >= #beginIndex# and rn <= #endIndex#
+	  ]]>	
+	</select>
+	
+	<!-- 查询配件信息列表 -->
+	<select id="queryPartsListBytype" parameterClass="java.util.Map" resultClass="PartsInfo">
+		select partsid,picturepath,partsname,type from
+			(select rownum as rn,t.* from 
+				(select partsid,picturepath,partsname,type
+				from hjsd_parts_info
+				where 1=1
+		<dynamic>
+ 			<isNotEmpty property="partsname" prepend="AND">
+   			 partsname like '%'||#partsname#||'%'
+  			</isNotEmpty>
+  		</dynamic>
+					order by createtime desc) t )
+		where 1=1
+		and
+		<![CDATA[ 
+		rn >= #beginIndex# and rn <= #endIndex#
+	  ]]>	
+	</select>
+	
+	<!-- 根据配件id查询配件详情 -->
+	<select id="queryPartdetailByid" parameterClass="java.lang.String" resultClass="PartsInfo">
+		select partsname,picturepath,type,
+			RTRIM(to_char(price,'fm999999999999990.99'),'.') as price,contactuser,contacttel,manufacturer
+		from hjsd_parts_info
+		where partsid=#partsid#
+	</select>
+	
+	<!-- 查询建材列表 -->
+	<select id="queryMaterialsList" parameterClass="java.util.Map" resultClass="Material">
+		select materialid,picturepath,name,price from
+			(select rownum as rn,t.* from 
+				(select materialid,picturepath,name,price
+				from hjsd_material_info
+				where 1=1
+		<dynamic>
+ 			<isNotEmpty property="name" prepend="AND">
+   			 name like '%'||#name#||'%'
+  			</isNotEmpty>
+  		</dynamic>
+					order by createtime desc) t )
+		where 1=1
+		and
+		<![CDATA[ 
+		rn >= #beginIndex# and rn <= #endIndex#
+	  ]]>
+	</select>
+	
+	<!-- 根据建材id查询建材详情 -->
+	<select id="queryMaterialdetailByid" parameterClass="java.lang.String" resultClass="Material">
+		select name,specifications,price,picturepath,
+			address,contactuser,contacttel
+		from hjsd_material_info
+		where materialid=#materialid#
+	</select>
+	
+	<!-- 查询船舶交易信息列表 -->
+	<select id="queryShipdealList" parameterClass="java.util.Map" resultClass="ShipDealInfo">
+		select shiptradeid,shipname,tradetype,shiptype,picturepath1,
+				RTRIM(to_char(actualtonnage,'fm999999999999990.99'),'.') as actualtonnage,publishtime from
+			(select rownum as rn,t.* from
+				(select shiptradeid,shipname,tradetype,shiptype,picturepath1,
+					actualtonnage,to_char(publishtime,'yyyy-MM-dd') as publishtime
+				from hjsd_shiptrade_info
+					where tradetype = #tradetype#
+					order by publishtime desc) t )
+		where 1=1
+		and
+		<![CDATA[ 
+		rn >= #beginIndex# and rn <= #endIndex#
+	  ]]>	
+	</select>
+	
+	<!-- 根据id查询船舶交易信息详情 -->
+	<select id="queryShipdealInfoByid" parameterClass="java.lang.String" resultClass="ShipDealInfo">
+		select shipname,usertel,shiptype,RTRIM(to_char(shiplong,'fm999999999999990.99'),'.') as shiplong,RTRIM(to_char(shipwidth,'fm999999999999990.99'),'.') as shipwidth,
+			RTRIM(to_char(shipdepth,'fm999999999999990.99'),'.') as shipdepth,
+			RTRIM(to_char(totaltonnage,'fm999999999999990.99'),'.') as totaltonnage,RTRIM(to_char(actualtonnage,'fm999999999999990.99'),'.') as actualtonnage,
+			RTRIM(to_char(loadtonnage,'fm999999999999990.99'),'.') as loadtonnage,bhp,
+			to_char(buildtime,'yyyy-MM-dd') as buildtime,RTRIM(to_char(price,'fm999999999999990.99'),'.') as price,picturepath1,
+			picturepath2,picturepath3,remark
+		from hjsd_shiptrade_info
+		where shiptradeid=#shiptradeid#
+        order by publishtime desc
+	</select>
+	
+	<!-- 竞标公告列表 -->
+	<select id="queryOutbidNoticeList" parameterClass="java.util.Map" resultClass="NoticeInfo">
+		select goodsbidid,status,RTRIM(to_char(bidprice,'fm999999999999990.99'),'.') as bidprice,bidopentime,bidid,username,picturepath
+		from
+			(select rownum rn,t.*
+			 from
+				(select a.goodsbidid,a.status,a.bidprice,
+					to_char(b.bidopentime,'yyyy-MM-dd hh:mm') as bidopentime,
+					b.bidid,c.username,c.picturepath
+				from hjsd_goodsbid_info a,
+					hjsd_goodssource_info b,
+					hjsd_user_info c
+				where a.status=#status#
+					and a.goodsid=b.goodssourceid
+					and a.biduser=c.userid
+					order by b.bidopentime desc
+				) t
+			)
+		where 1=1
+		and
+		<![CDATA[ 
+		rn >= #beginIndex# and rn <= #endIndex#
+	  ]]>
+	</select>
+	
+	<!-- 公告详情 -->
+	<select id="queryNoticedealInfoByid" parameterClass="java.lang.String" resultClass="NoticeInfo">
+		select RTRIM(to_char(a.bidprice,'fm999999999999990.99'),'.') as bidprice,to_char(a.createtime,'yyyy-MM-dd hh:mm') as createtime,
+			a.status,b.goodsname,RTRIM(to_char(b.goodsweight,'fm999999999999990.99'),'.') as goodsweight,b.departureport,b.arrivalport,
+			to_char(b.bidopentime,'yyyy-MM-dd hh:mm') as bidopentime,RTRIM(to_char(b.thefirstpayment,'fm999999999999990.99'),'.') as thefirstpayment,
+			RTRIM(to_char(b.limitedprice,'fm999999999999990.99'),'.') as limitedprice,b.bidid,c.username,c.usertel,d.name as merchandiser,
+			d.usertel as merchandisertel,e.shipname 
+		from hjsd_goodsbid_info a,
+			hjsd_goodssource_info b,
+			hjsd_user_info c,
+			hjsd_administrator_info d,
+			hjsd_ship_info e
+		where a.biduser=c.userid
+			and a.goodsid=b.goodssourceid
+			and a.shipid=e.shipid
+			and b.adminid=d.userid
+			and a.goodsbidid=#goodsbidid#
+	</select>
+	
+	<!-- 查询船舶信息 -->
+	<select id="queryShipinfoByid" parameterClass="java.util.Map" resultClass="Ship">
+		select 
+		ship.SHIPID,ship.SHIPNAME,RTRIM(to_char(ship.TONNAGE,'fm999999999999990.99'),'.') as TONNAGE,ship.SHIPTYPE,RTRIM(to_char(ship.SHIPLONG,'fm999999999999990.99'),'.') as SHIPLONG,
+		RTRIM(to_char(ship.SHIPWIDTH,'fm999999999999990.99'),'.') as SHIPWIDTH,RTRIM(to_char(ship.SHIPCAPACITY,'fm999999999999990.99'),'.') as SHIPCAPACITY,
+		RTRIM(to_char(ship.DRAUGHT,'fm999999999999990.99'),'.') as DRAUGHT,ship.HATCHNUMBER,ship.REGISTRYPORT,ship.HULLINSURANCE,ship.PICTUREPATH,ship.BUSINESSCERTIFICATE,ship.AIRWORTHINESSCERTIFICATE,
+		ship.CURRENTPROVINCE,ship.CURRENTCITY,ship.CURRENTPORT,ship.CREATEUSER,ship.PUBLISHTIME,ship.AUDITSTATE,ship.STATUS,ship.INTERNATIONALCERTIFICATE,
+		<isNotEmpty property="userid">
+			case when apply.SHIPAPPLYID is not null then #apply# else #noApply# end as shipstatus 
+		</isNotEmpty>
+		<isEmpty property="userid">
+			#noApply# as shipstatus 
+		</isEmpty>
+		from hjsd_ship_info ship 
+		<isNotEmpty property="userid">
+			left outer join HJSD_SHIPAPPLY_INFO apply on apply.APPLYUSER=#userid# and apply.SHIPID=ship.SHIPID
+		</isNotEmpty>
+		where ship.shipid=#shipid#
+	</select>
+	
+	<!-- 查询平台统计数据 -->
+	<select id="selectDataStatistics" resultClass="HomeInfo">
+		select BIDCHANCES,BIDCOUNT,FREIGHTCOUNT,RTRIM(to_char(GOODSWEIGHTCOUNT,'fm999999999999990.99'),'.') as GOODSWEIGHTCOUNT,
+			RTRIM(to_char(TURNOVERCOUNT,'fm999999999999990.99'),'.') as TURNOVERCOUNT,NEWS 
+		from table(fn_DataStatistics())
+	</select>
+
+	<!-- 获取app文件路径 -->
+	<select id="queryApkUpdateurl" resultClass="ApkVersionInfo">
+		select versioncode as versionCode,versionname as versionName,versionurl as versionUrl
+		from hjsd_appupdate_info
+	</select>
+	
+	<!-- 加油信息 -->
+	<select id="queryOilOnline" parameterClass="java.lang.String" resultClass="OilInfo">
+		select name,manufacturer,RTRIM(to_char(price,'fm999999999999990.99'),'.') as price,picturepath as picturePath,
+			contactuser as contactUser,contacttel as contactTel
+		from hjsd_onlinerefueling_info
+		where type=#type#
+	</select>
+</sqlMap>

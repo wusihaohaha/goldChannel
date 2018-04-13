@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="repair">
+	<typeAlias alias="UserBean" type="com.golden.login.po.UserBean" />
+	<typeAlias alias="RepairApply" type="com.golden.repair.po.RepairApply" />
+	<typeAlias alias="Maintainer" type="com.golden.repair.po.Maintainer" />
+	
+	<!-- 查询用户简单信息 -->
+	<select id="querySimpUserinfoByid" parameterClass="java.lang.String" resultClass="UserBean">
+		select userid,usertel,username
+		from hjsd_user_info
+		where userid=#userId#
+	</select>
+	
+	<!-- 添加维修师傅信息 -->
+	<insert id="addMaintainerInfo" parameterClass="java.util.Map">
+		insert into hjsd_maintenanceapply_info
+			(applyuser,name,tel,wechat,repaircontent,qualification,
+			auditstate,applytime)
+		values(#applyUser#,#userName#,#userTel#,#wechat#,#repairContent#,#qualifiCation#,
+		1,sysdate)
+	</insert>
+	
+	<!-- 我的报修列表 -->
+	<select id="queryRepairinfoList" parameterClass="java.util.Map" resultClass="RepairApply">
+		select maintenanceId,shipName,repairParts,repairContent,province,city,port,status,
+			applyUsertel,orderStatu
+		from
+			(select rownum rn,t.* from
+				(select a.maintenanceid as maintenanceId,a.shipname as shipName,a.repairparts as repairParts,
+					a.repaircontent as repairContent,a.province,a.city,a.port,a.status,
+					b.usertel as applyUsertel,c.status as orderStatu
+				from hjsd_maintenance_info a,
+					hjsd_user_info b,
+					hjsd_maintenanceorder_info c
+				where a.applyuser=b.userid
+					and a.maintenanceid=c.maintenanceid
+					and applyuser=#userId#
+					order by applytime desc
+				) t
+			)
+		<![CDATA[ where rn>=#beginIndex# and rn<=#endIndex# ]]>
+	</select>
+	
+	<!-- 查询报修详情 -->
+	<select id="queryRepairinfoByid" parameterClass="java.lang.String" resultClass="RepairApply">
+		select a.orderid as orderNum,a.status,b.name as maintainerName,b.tel as maintainerTel,
+			c.maintenanceid as maintenanceId,c.shipname as shipName,c.repairparts as repairParts,
+			c.repaircontent as repairContent,c.province,c.city,c.port
+		from hjsd_maintenanceorder_info a,
+		hjsd_maintenanceapply_info b,
+		hjsd_maintenance_info c
+		where a.repairmanid = b.applyuser
+			and a.maintenanceid=c.maintenanceid
+			and a.maintenanceid=#maintenanceId#
+	</select>
+	
+	<!-- 查询维修申请信息 -->
+	<select id="queryMaintainerApplyInfoByid" parameterClass="java.lang.String" resultClass="Maintainer">
+		select applyid as applyId,wechat,repaircontent as repairContent,qualification as qualifiCation,
+			auditstate as auditState,name as userName,tel as userTel
+		from hjsd_maintenanceapply_info
+		where applyuser=#userId#
+	</select>
+	
+	<!-- 查询维修信息 -->
+	<select id="queryMaintainerRepairListByid" parameterClass="java.lang.String" resultClass="RepairApply">
+		select a.orderid as orderNum,a.status,to_char(a.createtime,'yyyy-MM-dd') as orderTime,b.shipname as shipName,
+			b.repairparts as repairParts,b.repaircontent as repairContent,b.province,b.city,b.port,
+			c.usertel as applyUsertel
+		from hjsd_maintenanceorder_info a,
+			hjsd_maintenance_info b,
+			hjsd_user_info c
+		where a.maintenanceid = b.maintenanceid
+			and a.customerid=c.userid
+			and a.repairmanid =#userId#
+			order by a.createtime desc
+	</select>
+	
+	<!-- 查询报修信息列表 (抢单)-->
+	<select id="queryAllOrdersByround" parameterClass="java.util.Map" resultClass="RepairApply">
+		select maintenanceId,shipName,repairParts,repairContent,province,city,port,
+			applyUser,applyUsertel
+		from
+			(select rownum rn,t.*
+			 from
+				(select a.maintenanceid as maintenanceId,a.shipname as shipName,a.repairparts as repairParts,
+					a.repaircontent as repairContent,a.province,a.city,a.port,b.userid as applyUser,
+					b.usertel as applyUsertel
+				from hjsd_maintenance_info a,
+					hjsd_user_info b
+				where a.applyuser=b.userid
+					and a.status=1
+					and a.city like '%'||#city#||'%'
+					order by applytime desc
+				) t
+			)
+		<![CDATA[ where rn>=#beginIndex# and rn<=#endIndex# ]]>
+	</select>
+	
+	<!-- 查询是否申请维修师傅 -->
+	<select id="queryUserIsHadApply" parameterClass="java.lang.String" resultClass="java.lang.Integer">
+		select count(1) from hjsd_maintenanceapply_info
+		where applyuser=#userId#
+	</select>
+	
+	<!-- 删除报修信息 -->
+	<delete id="deleteRepairInfoByid" parameterClass="java.lang.String">
+		delete from hjsd_maintenance_info
+		where maintenanceid=#maintenanceId#
+	</delete>
+	
+	<!-- 查询报修单状态 -->
+	<select id="queryRepairStatus" parameterClass="java.lang.String" resultClass="java.lang.String">
+		select status from hjsd_maintenance_info
+		where maintenanceid=#maintenanceId#
+	</select>
+	
+	<!-- 修改报修单状态为已被接 -->
+	<update id="updateMaintenanceStatus" parameterClass="java.lang.String">
+		update hjsd_maintenance_info
+			set status=2
+		where maintenanceid=#maintenanceId#
+	</update>
+	
+	<!-- 添加订单信息 -->
+	<insert id="addOrderInfo" parameterClass="java.util.Map">
+		insert into hjsd_maintenanceorder_info
+			(orderid,maintenanceid,customerid,repairmanid,
+				status,createtime,amount)
+		values
+			(to_char(sysdate,'yyyymmdd')||lpad(orderid_seq.nextval,6,0),
+				#maintenanceId#,#customerid#,#repairmanid#,1,sysdate,0)
+	</insert>
+	
+	<!-- 修改船舶修理状态 -->
+	<update id="updateRepairStatus" parameterClass="java.util.Map">
+		update hjsd_maintenanceorder_info
+			set status=#status#
+		where maintenanceid=#maintenanceId#
+	</update>
+	
+	<!-- 添加报修信息 -->
+	<insert id="addneedRepairinfo" parameterClass="RepairApply">
+		insert into hjsd_maintenance_info
+			(applyuser,shipname,repairparts,repaircontent,
+			province,city,port,status,applytime)
+		values(#applyUser#,#shipName#,#repairParts#,#repairContent#,
+			#province#,#city#,#port#,1,sysdate)
+	</insert>
+	
+	<!-- 查询订单 -->
+	<select id="queryOrderCountByid" parameterClass="java.lang.String" resultClass="java.lang.Integer">
+		select count(1) from hjsd_maintenanceorder_info
+		where maintenanceid=#maintenanceId#
+	</select>
+	
+	<!-- 查询未被接单信息 -->
+	<select id="queryLessRepairinfoByid" parameterClass="java.lang.String" resultClass="RepairApply">
+		select a.maintenanceid as maintenanceId,a.shipname as shipName,a.repairparts as repairParts,
+			a.repaircontent as repairContent,a.province,a.city,a.port,b.userid as applyUser,
+			b.usertel as applyUsertel
+		from hjsd_maintenance_info a,
+			hjsd_user_info b
+		where a.applyuser=b.userid
+			and maintenanceid=#maintenanceId#
+	</select>
+	
+	<!-- 维修师傅申请打回状态修改信息 -->
+	<update id="updateMaintainerInfo" parameterClass="Maintainer">
+		update hjsd_maintenanceapply_info
+			set name=#userName#,
+			tel=#userTel#,
+			wechat=#wechat#,
+			repaircontent=#repairContent#,
+		<isNotEmpty property="qualifiCation">
+			qualification=#qualifiCation#,
+		</isNotEmpty>
+			auditstate=1
+		where applyid=#applyId#
+	</update>
+	
+	<!-- 维修师傅申请通过状态修改信息 -->
+	<update id="updateRepairInfoByStatu" parameterClass="Maintainer">
+		update hjsd_maintenanceapply_info
+			set tel=#userTel#,
+			wechat=#wechat#,
+			repaircontent=#repairContent#
+		where applyid=#applyId#
+	</update>
+</sqlMap>
