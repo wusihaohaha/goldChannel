@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+	    <meta charset="utf-8">
+	    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	    <meta name="renderer" content="webkit">
+	    <title>我的</title>
+	    <script src="js/flexible_css.debug.js"></script>
+		<script src="js/flexible.debug.js"></script>
+		<link rel="stylesheet" href="css/index.css" />
+		<script src="js/jquery-1.8.2.min.js"></script>
+		<script src="js/layer.js" ></script>
+		<style>
+			html,body{background-color: #efefef;}
+		</style>
+	</head>
+	<body>
+		<div class="ymbtm">
+			<dl class="myhead">
+				<dt >
+					<img src="images/mescroll-empty.png" id="img"/>
+				</dt>
+				<dd id="nickname">在乎你的在乎</dd>
+				<dd id="city">湖北武汉</dd>
+			</dl>
+			<div class="rows">
+				<div class="row_sty iconpic">
+					<label>手机号码</label>
+					<span id="phone">18872402126</span>
+				</div>
+				<div class="row_sty iconpic">
+					<label>账号认证</label>
+					<span><a href="consignorVerify.html" id="renzheng">立即认证</a></span>
+				</div>
+			</div>
+			<div class="rows">
+				<div class="row_sty iconpic">
+					<label>我的账号身份</label>
+					<span id="shenfen">我是货主（个人）</span>
+				</div>
+				<div class="row_sty iconpic">
+					<label id="my">我的货物</label>
+					<span><!--<a href="mylading.html" id="list">--></span>
+				</div>
+			</div>
+			<div class="rows">
+				<div class="row_sty iconpic">
+					<label>联系客服</label>
+				</div>
+			</div>
+			<div class="my_p">
+				<p>京ICP备17070077号</p>
+				<p>2017-2018黄金水道网络科技有限公司</p>
+			</div>
+		</div>
+		<div class="footsty">
+		  	<a href="findship.html" class="foot_a">
+	          <div class="footimg">
+	            <img src="images/chuan.png" alt="">
+	          </div>
+	          <p class="footfont">找船</p>
+	        </a>
+	        <a href="findlading.html" class="foot_a">
+	          <div class="footimg">
+	            <img src="images/zhaohuo.png" alt="">
+	          </div>
+	          <p class="footfont">找货</p>
+	        </a>
+	        <a href="addship.html" class="foot_a">
+	          <div class="footimg">
+	            <img src="images/fabu.png" alt="">
+	          </div>
+	          <p class="footfont">发布</p>
+	        </a>
+	        <a href="my.html" class="foot_a">
+	          <div class="footimg">
+	            <img src="images/my1.png" alt="">
+	          </div>
+	          <p class="footfont">我的</p>
+	        </a>
+	    </div>
+	</body>
+	<script src="js/index.js" ></script>
+	<script>
+//手机号码：   	localStorage.getItem('phone');
+//用户openid： 	localStorage.getItem('openid);
+//用户类型：	 	localStorage.getItem('type');	0货主 1是船主
+//用户身份：	 	localStorage.getItem('shenfen'); 1个人,2个人代理,3企业,4船主
+//用户认证状态：	localStorage.getItem('renzheng');0待认证,1认证中,2不通过,3通过
+//用户信息：		var userInfo = JSON.parse(localStorage.getItem('userInfo'))
+//昵称： userInfo.nickname;
+//头像： userInfo.headimgurl;
+//省：   userInfo.province;
+//市：   userInfo.city;
+
+		$(function(){
+		
+			var userInfo = JSON.parse(localStorage.getItem('userInfo'))
+			if(userInfo){
+				$('#img').attr('src',userInfo.headimgurl);
+				$('#nickname').text(userInfo.nickname);
+				$('#city').text(userInfo.province+userInfo.city);
+				$('#phone').text(localStorage.getItem('phone'));
+				//认证状态
+				var renzheng= localStorage.getItem('renzheng');
+				if(renzheng=='0'){
+					$('#renzheng').text('立即认证');
+					if(localStorage.getItem('type')=='0'){
+						$('#renzheng').attr('href','consignorVerify.html');
+					}
+					if(localStorage.getItem('type')=='1'){
+						$('#renzheng').attr('href','船主认证.html');//TODO
+					}	
+				}else if(renzheng=='1'){
+					$('#renzheng').text('认证中');
+					$('#renzheng').attr('href','认证中.html');//TODO
+				}else if(renzheng=='2'){
+					$('#renzheng').text('认证不通过');
+					$('#renzheng').attr('href','认证不通过.html');//TODO
+				}else if(renzheng=='3'){
+					$('#renzheng').text('已认证');
+					$('#renzheng').attr('href','已完成认证.html');//TODO
+				}
+				
+				//账号身份
+				var shenfen = localStorage.getItem('shenfen');
+				if(shenfen=='1'||shenfen=='2'){
+					$('#shenfen').text('我是货主（个人)');
+				}
+				if(shenfen=='3'){
+					$('#shenfen').text('我是货主（企业)');
+				}
+				if(shenfen=='4'){
+					$('#shenfen').text('我是船主');
+				}
+				
+				if(localStorage.getItem('type')=='0'){
+					$('#my').text('我的货物');
+					$('#list').attr('href','mylading.html');
+				}else{
+					$('#my').text('我的船舶');
+					$('#list').attr('href','myship.html');
+				}
+				
+
+			}
+				
+		
+		
+		
+		
+		})
+	
+	
+	</script>
+	
+</html>

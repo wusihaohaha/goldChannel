@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+	    <meta charset="utf-8">
+	    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	    <meta name="renderer" content="webkit">
+	    <title>添加船舶</title>
+	    <script src="js/flexible_css.debug.js"></script>
+		<script src="js/flexible.debug.js"></script>
+		<link rel="stylesheet" href="css/index.css" />
+		<link rel="stylesheet" href="css/cityselect.css" />
+		
+		<style>
+			body{
+				padding-bottom: 1.5rem;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="rows liststy ymbtm">
+			<div class="row_sty">
+				<label>船舶名称</label>
+				<input type="text" value="" placeholder="填写船舶名称" />
+			</div>
+			<div class="row_sty">
+				<label>满载吨位</label>
+				<input type="text" value="" placeholder="请填写满载吨位" />吨&nbsp;
+			</div>
+			<div class="row_sty">
+				<label>船舶类型</label>
+				<select>
+					<option value="">请选择船舶类型</option>
+					<option value="散货船">散货船</option>
+					<option value="集装箱船">集装箱船</option>
+					<option value="集散两用">集散两用</option>
+					<option value="滚装船">滚装船</option>
+					<option value="多用途船">多用途船</option>
+				</select>
+			</div>
+			<div class="row_sty">
+				<label>驾驶舱</label>
+				<select>
+					<option value="">请选择前置/后置</option>
+					<option value="前置">前置</option>
+					<option value="后置">后置</option>
+				</select>
+			</div>
+			<div class="row_sty">
+				<label>封舱设备</label>
+				<select>
+					<option value="">请选择封舱设备</option>
+					<option value="无封舱">无封舱</option>
+					<option value="手动棚架">手动棚架</option>
+					<option value="自动棚架">自动棚架</option>
+					<option value="雨布封舱">雨布封舱</option>
+				</select>
+			</div>
+			<div class="row_sty">
+				<label>船籍港</label>
+				<input type="text" value="" placeholder="请填写" />
+			</div>
+			<div class="row_sty">
+				<label>建造时间</label>
+				<input type="text" value="" placeholder="请填写" />
+			</div>
+			<div class="row_sty">
+				<label>船长</label>
+				<input type="text" value="" placeholder="请填写" />米&nbsp;
+			</div>
+			<div class="row_sty">
+				<label>船宽</label>
+				<input type="text" value="" placeholder="请填写" />米&nbsp;
+			</div>
+			<div class="row_sty">
+				<label>型深</label>
+				<input type="text" value="" placeholder="请填写" />米&nbsp;
+			</div>
+			<div class="row_sty">
+				<label>满载吃水</label>
+				<input type="text" value="" placeholder="请填写" />
+			</div>
+			<div class="row_sty">
+				<label>适航航区</label>
+				<select>
+					<option value="">请选择适航航区</option>
+					<option value="宜宾-宜昌">宜宾-宜昌</option>
+					<option value="宜昌-上海">宜昌-上海</option>
+					<option value="宜宾-上海">宜宾-上海</option>
+					<option value="中国运河">宜宾-上海中国运河</option>
+					<option value="中国沿海">中国沿海</option>
+					<option value="国际远洋">国际远洋</option>
+				</select>
+			</div>
+			<div class="row_sty">
+				<label>当前所在地</label>
+				<input type="text" id="nowplace"  class="select-value" value="" placeholder="当前所在地">
+			</div>
+			<div class="row_sty">
+				<label>当前状态</label>
+				<select>
+					<option value="">是否空载</option>
+					<option value="是">是</option>
+					<option value="否">否</option>
+				</select>
+			</div>
+			<div class="row_sty">
+				<label>可载货起始时间</label>
+				<input type="date" value="" />
+			</div>
+			<div class="row_sty">
+				<label>可载货结束时间</label>
+				<input type="date" value="" />
+			</div>
+			<p class="p_title">船舶证书照片仅用于审核，谨防假冒，不会对外显示。请放心，平台绝不会泄漏船舶隐私信息。</p>
+			<ul class="picupload_ul">
+				<li>
+					<div class="uploadsty uploadsty2">
+			            <input type="file" class="filesty" id="shipfiles" accept="image/*" >
+			            <img src="images/sc.png" id="shippreview">
+			        </div>
+			        <p class="centersty">船舶运营证</p>
+				</li>
+				<li>
+					<div class="uploadsty uploadsty2">
+			            <input type="file" class="filesty" id="shipfiles2" accept="image/*" >
+			            <img src="images/sc.png" id="shippreview2">
+			        </div>
+			        <p class="centersty">船舶试航证书</p>
+				</li>
+				<li>
+					<div class="uploadsty uploadsty2">
+			            <input type="file" class="filesty" id="shipfiles3" accept="image/*" >
+			            <img src="images/sc.png" id="shippreview3">
+			        </div>
+			        <p class="centersty">船舶保险单</p>
+				</li>
+				<li>
+					<div class="uploadsty uploadsty2">
+			            <input type="file" class="filesty" id="shipfiles4" accept="image/*" >
+			            <img src="images/sc.png" id="shippreview4">
+			        </div>
+			        <p class="centersty">船检证书第二页</p>
+				</li>
+			</ul>
+				<input type="button" class="btn_sty" value="确定"  />
+			</div>
+			
+		</div>
+		<div class="footsty">
+		  	<a href="findship.html" class="foot_a">
+	          <div class="footimg">
+	            <img src="images/chuan.png" alt="">
+	          </div>
+	          <p class="weui-tabbar__label">找船</p>
+	        </a>
+	        <a href="findlading.html" class="foot_a">
+	          <div class="footimg">
+	            <img src="images/zhaohuo.png" alt="">
+	          </div>
+	          <p class="weui-tabbar__label">找货</p>
+	        </a>
+	        <a href="addship.html" class="foot_a">
+	          <div class="footimg">
+	            <img src="images/fabu1.png" alt="">
+	          </div>
+	          <p class="weui-tabbar__label">发布</p>
+	        </a>
+	        <a href="my.html" class="foot_a">
+	          <div class="footimg">
+	            <img src="images/my.png" alt="">
+	          </div>
+	          <p class="weui-tabbar__label">我的</p>
+	        </a>
+	    </div>
+	</body>
+	<script src="js/jquery-1.8.2.min.js"></script>
+	<script src="js/small-exif.js"></script>
+	<script src="js/picupload.js"></script>
+	<script src="js/cityselect.js" ></script>
+	<script>
+		imgupload("shipfiles","shippreview");
+        imgupload("shipfiles2","shippreview2");
+        imgupload("shipfiles3","shippreview3");
+        imgupload("shipfiles4","shippreview4");
+        
+        $('#nowplace').mPicker({
+			    //级别
+			    level:2,
+			    //需要渲染的json，二级联动的需要嵌套子元素，有一定的json格式要求
+			    dataJson:dataJson,
+			    //true:联动
+			    Linkage:true,
+			    //显示行数
+			    rows:6,
+			    //默认值填充
+			    idDefault:true,
+			    //分割符号
+			    splitStr:' ',
+			    //头部代码
+			    header:'<div class="mPicker-header">请选择当前所在地</div>',
+			    confirm:function(){
+			        //更新json
+					
+			        
+			    },
+			    cancel:function(){
+			    }
+			});
+	</script>
+</html>

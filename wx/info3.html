@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="zh-cn">
+	<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <title>我的消息</title>
+    <script src="js/flexible_css.debug.js"></script>
+	<script src="js/flexible.debug.js"></script>
+	<link rel="stylesheet" href="css/main.css" />
+	<link rel="stylesheet" href="css/dropload.css" />
+	<script src="js/jquery-1.8.2.min.js"></script>
+	<script src="js/admin.js" ></script>
+	<script src="js/dropload.min.js"></script>
+</head>
+<body>
+	<div class="mymain">
+		<ul class="mymsg">
+			<!--<li>
+				<h3>系统消息</h3>
+				<p>系统消息系统消息系统消息系统消息系统消息系统消息系统消息</p>
+				<div>2016-12-22 16:00</div>
+			</li>
+			<li>
+				<h3>系统消息</h3>
+				<p>系统消息系统消
+				系统消息系统消息系统消息系统消息系统消息系统消息系统消息系统消息系统消息系统消息系统消息系统消息系统消息系统消息系统消息系统消息系统消息系统消息系统消息系统消息系统消息</p>
+				<div>2016-12-22 16:00</div>
+			</li>
+			<li>
+				<h3>系统消息</h3>
+				<p>系统消息系统消息系统消息系统消息系统消息系统消息系统消息</p>
+				<div>2016-12-22 16:00</div>
+			</li>-->
+		</ul>
+	</div>
+
+<script>
+$(function(){
+	var userInfo = JSON.parse(localStorage.getItem('userInfo'));
+	console.log('userInfo='+JSON.stringify(userInfo));
+	if(userInfo){
+		$('.mymsg').html('<li>姓名：'+userInfo.nickname+'</li>'+
+		                 '<li>姓别：'+userInfo.sex+'</li>'+
+						 '<li>头像：'+userInfo.headimgurl+'</li>'
+		);
+	}else{
+		$.ajax({
+			type: 'get',
+			url: 'http://m.hjsdwl.com/goldChannelWX/wx/getWxUserInfoRedirect.json?code='+getUrlParam("code"),
+			dataType: 'json',
+			success: function(data){
+				var result = '';
+				if(data){
+					console.log('data='+data);
+					localStorage.setItem('userInfo',JSON.stringify(data));
+					//data = JSON.parse(data);
+					result = '<li>姓名：'+data.nickname+'</li>'+
+				 '<li>姓别：'+data.sex+'</li>'+
+				 '<li>头像：'+data.headimgurl+'</li>'
+				}
+
+				// 延迟0.5秒加载
+				setTimeout(function(){
+					$('.mymsg').html(result);
+					// 每次数据加载完，必须重置
+				},500);
+			},
+			error: function(xhr, type){
+			
+			}
+		});
+	}
+    // dropload
+		
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+	    <meta charset="utf-8">
+	    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	    <meta name="renderer" content="webkit">
+	    <title>找货</title>
+	    <script src="js/flexible_css.debug.js"></script>
+		<script src="js/flexible.debug.js"></script>
+		<link rel="stylesheet" href="css/index.css" />
+		<link rel="stylesheet" href="css/cityselect.css" />
+		<link rel="stylesheet" href="dist/mescroll.min.css" />
+		
+		<style type="text/css">
+			* {
+				margin: 0;
+				padding: 0;
+				-webkit-touch-callout:none;
+				-webkit-tap-highlight-color:transparent;
+			}
+			*:not(input,textarea) { 
+			    -webkit-touch-callout: none; 
+			    -webkit-user-select: none; 
+			}
+			body{background-color: white}
+			ul{list-style-type: none}
+			a {text-decoration: none;color: #18B4FE;}
+			
+
+			/*mescroll 滚动区域*/
+			.mescroll{
+				position: fixed;
+				top: 2rem;
+				bottom: 0;
+				height: auto;
+			}
+			/*搜索结果*/
+			.data-list li{
+				position: relative;
+				padding: 10px 8px 10px 120px;
+				border-bottom: 1px solid #eee;
+			}
+			.data-list .pd-img{
+				position: absolute;
+				left: 18px;
+				top: 18px;
+				width: 80px;
+				height: 80px;
+			}
+			.data-list .pd-name{
+				font-size: 16px;
+				line-height: 40px;
+				height: 40px;
+				overflow: hidden;
+			}
+			.data-list .pd-price{
+				/*margin-top: 8px;*/
+				color: red;
+			}
+			.data-list .pd-sold{
+				font-size: 12px;
+				margin-top: 8px;
+				color: gray;
+			}
+			/*回到顶部按钮*/
+			.mescroll-totop{
+				font-size: 12px;
+				line-height: 10px;
+				background-color: white;
+				border: 1px solid gray;
+				text-align: center;
+			}
+			.mescroll-totop p{
+				padding-top: 6px;
+				color: #666;
+			}
+		</style>
+	</head>
+	<body>
+		    <div class="orderInfo">
+				<marquee  onmouseover="this.stop()" onmouseout="this.start()" direction="left"  behavior="scroll" scrollamount="7" scrolldelay="0" loop="-1" hspace="10" vspace="10">
+		    	累计成交：<span>11122</span> 单 &nbsp;&nbsp; &nbsp;&nbsp;已完成运输：<span>122</span> 单
+				</marquee>
+				<ul class="filter_sty">
+					<li>
+						<input type="text" id="startplace"  class="select-value" value="" placeholder="起运地">
+						<img src="images/xiala.png" />
+					</li>
+					<li>
+						<input type="text" id="destination" class="select-value" value="" placeholder="目的地">
+						<img src="images/xiala.png" />
+					</li>
+					<li>
+						<select>
+							<option value="货物重量">货物重量</option>
+							<option value="1000-2000">1000-2000</option>
+							<option value="1000-2000">1000-2000</option>
+							<option value="1000-2000">1000-2000</option>
+						</select>
+						<img src="images/xiala.png" />
+					</li>
+				</ul>
+	    	</div>
+	    	
+	    <!--模拟的标题-->
+		<!--<div class="header">
+			<a class="btn-left" href="../index.html">main</a> 
+			<input id="keyword" type="text" placeholder="请输入搜索关键词" />
+			<p id="search" class="btn-right">搜索</p>
+		</div>	-->
+		<div id="mescroll" class="mescroll ymbtm">
+			<!--搜索结果-->
+			<ul id="dataList" class="data-list">
+				<!--<li>
+					<img class="pd-img" src="../res/img/pd1.jpg"/>
+					<p class="pd-name">商品标题商品标题商品标题商品标题商品标题商品</p>
+					<p class="pd-price">200.00 元</p>
+					<p class="pd-sold">已售50件</p>
+				</li>-->
+			</ul>
+				
+		</div>
+		<div class="footsty">
+		  	<a href="findship.html" class="foot_a">
+	          <div class="footimg">
+	            <img src="images/chuan.png" alt="">
+	          </div>
+	          <p class="weui-tabbar__label">找船</p>
+	        </a>
+	        <a href="findlading.html" class="foot_a">
+	          <div class="footimg">
+	            <img src="images/zhaohuo1.png" alt="">
+	          </div>
+	          <p class="weui-tabbar__label">找货</p>
+	        </a>
+	        <a href="addship.html" class="foot_a">
+	          <div class="footimg">
+	            <img src="images/fabu.png" alt="">
+	          </div>
+	          <p class="weui-tabbar__label">发布</p>
+	        </a>
+	        <a href="my.html" class="foot_a">
+	          <div class="footimg">
+	            <img src="images/my.png" alt="">
+	          </div>
+	          <p class="weui-tabbar__label">我的</p>
+	        </a>
+	    </div>
+	</body>
+	<script src="js/jquery-1.8.2.min.js"></script>
+	<script src="js/layer.js" ></script>
+	<script src="js/cityselect.js" ></script>
+	<script src="js/index.js" ></script>
+	<script src="dist/mescroll.min.js"></script>
+
+	
+	
+	
+	<script type="text/javascript" charset="utf-8">
+		$(function(){
+			//创建MeScroll对象,内部已默认开启下拉刷新,自动执行up.callback,重置列表数据;
+			var mescroll = new MeScroll("mescroll", {
+				down:{
+					auto:false //是否在初始化完毕之后自动执行下拉回调callback; 默认true; (注: down的callback默认调用 mescroll.resetUpScroll(); )
+//					callback: function(mescroll) {
+//						mescroll.resetUpScroll(); //下拉刷新的回调,默认重置上拉加载列表为第一页
+//					},
+				},
+				up: {
+					callback: getListData, //上拉回调,此处可简写; 相当于 callback: function (page) { getListData(page); }
+					clearEmptyId: "dataList", //1.下拉刷新时会自动先清空此列表,再加入数据; 2.无任何数据时会在此列表自动提示空
+					isBounce: false, //此处禁止ios回弹,解析(务必认真阅读,特别是最后一点): http://www.mescroll.com/qa.html#q10
+					noMoreSize: 3, //如果列表已无数据,可设置列表的总数量要大于半页才显示无更多数据;避免列表数据过少(比如只有一条数据),显示无更多数据会不好看
+					empty: {
+						//列表第一页无任何数据时,显示的空提示布局; 需配置warpId或clearEmptyId才生效;
+						//warpId:null, //父布局的id; 如果此项有值,将不使用clearEmptyId的值;
+						icon: "./images/mescroll-empty.png", //图标,默认null
+						tip: "亲,没有您要找的船舶~", //提示
+//						btntext: "去逛逛 >", //按钮,默认""
+//						btnClick: function(){//点击按钮的回调,默认null
+//							alert("点击了按钮,具体逻辑自行实现");
+//						} 
+					},
+					toTop:{ //配置回到顶部按钮
+						//src : "../res/img/mescroll-totop.png", //默认滚动到1000px显示,可配置offset修改
+						html : "<p>^<br/>顶部<p>", //标签内容,默认null; 如果同时设置了src,则优先取src
+						offset : 500
+					}
+				}
+			});
+			
+			var selectcode=null;//搜索关键字
+			$('#startplace').mPicker({
+			    //级别
+			    level:2,
+			    //需要渲染的json，二级联动的需要嵌套子元素，有一定的json格式要求
+			    dataJson:dataJson,
+			    //true:联动
+			    Linkage:true,
+			    //显示行数
+			    rows:6,
+			    //默认值填充
+			    idDefault:true,
+			    //分割符号
+			    splitStr:' ',
+			    //头部代码
+			    header:'<div class="mPicker-header">请选择地点</div>',
+			    confirm:function(){
+			        //更新json
+					var startval=$('#startplace').val();
+					if(startval){
+						selectcode=startval; //
+						mescroll.resetUpScroll(); //重新搜索,重置列表数据
+					}
+			        this.container.data('mPicker').updateData(cityData);
+			        
+			    },
+			    cancel:function(){
+			    }
+			});
+			
+			//目的地
+			$('#destination').mPicker({
+			    //级别
+			    level:2,
+			    //需要渲染的json，二级联动的需要嵌套子元素，有一定的json格式要求
+			    dataJson:dataJson,
+			    //true:联动
+			    Linkage:true,
+			    //显示行数
+			    rows:6,
+			    //默认值填充
+			    idDefault:true,
+			    //分割符号
+			    splitStr:' ',
+			    //头部代码
+			    header:'<div class="mPicker-header">请选择地点</div>',
+			    confirm:function(){
+			        //更新json
+					var endval=$('#destination').val();
+					$('#destination').val(endval.substring(endval.lastIndexOf(' ') + 1));
+					if(endval){
+						selectcode=endval; //
+						mescroll.resetUpScroll(); //重新搜索,重置列表数据
+					}
+			        this.container.data('mPicker').updateData(cityData);
+			        
+			    },
+			    cancel:function(){
+			    }
+			});
+			
+			/*联网加载列表数据  page = {num:1, size:10}; num:当前页 从1开始, size:每页数据条数 */
+			function getListData(page){
+				//联网加载数据
+				getListDataFromNet(selectcode, page.num, page.size, function(shipPageData){
+					//联网成功的回调,隐藏下拉刷新和上拉加载的状态;
+					//mescroll会根据传的参数,自动判断列表如果无任何数据,则提示空;列表无下一页数据,则提示无更多数据;
+					console.log("page.num="+page.num+", page.size="+page.size+", shipPageData.length="+shipPageData.length);
+					
+					//方法一(推荐): 后台接口有返回列表的总页数 totalPage
+					//mescroll.endByPage(shipPageData.length, totalPage); //必传参数(当前页的数据个数, 总页数)
+					
+					//方法二(推荐): 后台接口有返回列表的总数据量 totalSize
+					//mescroll.endBySize(shipPageData.length, totalSize); //必传参数(当前页的数据个数, 总数据量)
+					
+					//方法三(推荐): 您有其他方式知道是否有下一页 hasNext
+					//mescroll.endSuccess(shipPageData.length, hasNext); //必传参数(当前页的数据个数, 是否有下一页true/false)
+					
+					//方法四 (不推荐),会存在一个小问题:比如列表共有20条数据,每页加载10条,共2页.如果只根据当前页的数据个数判断,则需翻到第三页才会知道无更多数据,如果传了hasNext,则翻到第二页即可显示无更多数据.
+					mescroll.endSuccess(shipPageData.length);
+					
+					//设置列表数据,因为配置了emptyClearId,第一页会清空dataList的数据,所以setListData应该写在最后;
+					setListData(shipPageData);
+				}, function(){
+					//联网失败的回调,隐藏下拉刷新和上拉加载的状态;
+	                mescroll.endErr();
+				});
+			}
+			
+			/*设置列表数据*/
+			function setListData(shipPageData){
+				var listDom=document.getElementById("dataList");
+				for (var i = 0; i < shipPageData.length; i++) {
+					var pd=shipPageData[i];
+					
+					var str='<img class="pd-img" src="'+pd.pdImg+'"/>';
+					str+='<p class="pd-name">'+pd.pdName+'</p>';
+					str+='<p class="pd-price">可装'+pd.pdPrice+' 吨</p>';
+					str+='<p class="pd-sold">现停靠在'+pd.pdSold+'状态</p>';
+					
+					var liDom=document.createElement("li");
+					liDom.innerHTML=str;
+					listDom.appendChild(liDom);
+				}
+			}
+			
+			/*联网加载列表数据
+			 在您的实际项目中,请参考官方写法: http://www.mescroll.com/api.html#tagUpCallback
+			 请忽略getListDataFromNet的逻辑,这里仅仅是在本地模拟分页数据,本地演示用
+			 实际项目以您服务器接口返回的数据为准,无需本地处理分页.
+			 * */
+			var getjson='dist/pdlist1.json';
+			function getListDataFromNet(selectcode, pageNum,pageSize,successCallback,errorCallback) {
+				//延时一秒,模拟联网
+                setTimeout(function () {
+                	$.ajax({
+		                type: 'GET',
+		                url:getjson,
+//		                url: '../res/pdlist1.json?num='+pageNum+"&size="+pageSize+"&word="+selectcode,
+		                dataType: 'json',
+		                success: function(dataAll){
+		                	//模拟服务器接口的搜索
+		                	var data=[];
+	                		for (var i = 0; i < dataAll.length; i++) {
+//	                			if (dataAll[i].pdName.indexOf(selectcode)!=-1) {
+//	                				data.push(dataAll[i]);
+//	                			}
+								data.push(dataAll[i]);
+	                		}
+		                	//模拟服务器接口的分页
+		                	var listData=[];
+							for (var i = (pageNum-1)*pageSize; i < pageNum*pageSize; i++) {
+			            		if(i==data.length) break;
+			            		listData.push(data[i]);
+			            	}
+							
+		                	successCallback(listData);
+		                },
+		                error: errorCallback
+		            });
+                },500)
+			}
+			
+		});
+	</script>
+</html>

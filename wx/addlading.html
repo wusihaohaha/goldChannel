@@ -1,0 +1,155 @@
+﻿<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+	    <meta charset="utf-8">
+	    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	    <meta name="renderer" content="webkit">
+	    <title>添加货物</title>
+	    <script src="js/flexible_css.debug.js"></script>
+		<script src="js/flexible.debug.js"></script>
+		<link rel="stylesheet" href="css/index.css" />
+		<link rel="stylesheet" href="css/cityselect.css" />
+		<style>
+			body{
+				padding-bottom: 1.5rem;
+			}
+			.liststy .row_sty label{
+				width: 3rem;
+			}
+			.liststy .row_sty label~input,.liststy .row_sty label~select{
+				width: 4.2rem;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="rows liststy ymbtm">
+			<div class="row_sty">
+				<label>货物名称</label>
+				<select>
+					<option value="">请选择货物名称</option>
+				</select>
+			</div>
+			<div class="row_sty">
+				<label>货物吨位</label>
+				<input type="text" value="" placeholder="请填写货物吨位" />&nbsp;&nbsp;吨
+			</div>
+			<div class="row_sty">
+				<label>起运地</label>
+				<input type="text" id="originplace"  class="select-value" value="" placeholder="选择起运地">
+			</div>
+			<div class="row_sty">
+				<label>起运码头</label>
+				<input type="text" value="" placeholder="请填写起运码头" />
+			</div>
+			<div class="row_sty">
+				<label>目的地</label>
+				<input type="text" id="destination"  class="select-value" value="" placeholder="选择起运地">
+			</div>
+			<div class="row_sty">
+				<label>目的码头</label>
+				<input type="text" value="" placeholder="请填写目的码头" />
+			</div>
+			<div class="row_sty">
+				<label>最高价格</label>
+				<input type="text" value="" placeholder="最高运费，可不填" />&nbsp;元/吨
+			</div>
+			<div class="row_sty">
+				<label>装货日期</label>
+				<input type="date" value="" placeholder="请选择装货日期" />
+			</div>
+			<div class="row_sty">
+				<label>卸货日期</label>
+				<input type="date" value="" placeholder="请选择卸货日期" />
+			</div>
+			<div class="row_sty">
+				<label>卸货天数</label>
+				<input type="text" value="" placeholder="请填写卸货天数" />
+			</div>
+			<div class="row_sty">
+				<label>延期费用</label>
+				<input type="text" value="" placeholder="填写价格" />元/吨/天&nbsp;
+			</div>
+			<div class="row_sty">
+				<label>货源</label>
+				<select>
+					<option value="">请选择货源</option>
+					<option value="黄金水道自营">黄金水道自营</option>
+					<option value="第三方货源">第三方货源</option>
+				</select>
+			</div>
+			<div class="row_sty">
+				<label>备注</label>
+				<input type="text" value="" placeholder="填写备注" />
+			</div>
+			<input type="button" class="btn_sty" value="添加" />
+		</div>
+		<div class="footsty">
+		  	<a href="findship.html" class="foot_a">
+	          <div class="footimg">
+	            <img src="images/chuan.png" alt="">
+	          </div>
+	          <p class="weui-tabbar__label">找船</p>
+	        </a>
+	        <a href="findlading.html" class="foot_a">
+	          <div class="footimg">
+	            <img src="images/zhaohuo.png" alt="">
+	          </div>
+	          <p class="weui-tabbar__label">找货</p>
+	        </a>
+	        <a href="addship.html" class="foot_a">
+	          <div class="footimg">
+	            <img src="images/fabu1.png" alt="">
+	          </div>
+	          <p class="weui-tabbar__label">发布</p>
+	        </a>
+	        <a href="my.html" class="foot_a">
+	          <div class="footimg">
+	            <img src="images/my.png" alt="">
+	          </div>
+	          <p class="weui-tabbar__label">我的</p>
+	        </a>
+	    </div>
+	</body>
+	<script src="js/jquery-1.8.2.min.js"></script>
+	<script src="js/cityselect.js" ></script>
+	<script>
+		$(".btn_sty").click(function(){
+			$.ajax({
+				type:"get",
+				url:"http://m.hjsdwl.com/goldChannelWX/getGoodsName",
+				dataType: 'jsonp',
+				success: function(data){
+			        alert(data)
+			    }
+			});
+		});
+	
+	
+		 $('.select-value').mPicker({
+			    //级别
+			    level:2,
+			    //需要渲染的json，二级联动的需要嵌套子元素，有一定的json格式要求
+			    dataJson:dataJson,
+			    //true:联动
+			    Linkage:true,
+			    //显示行数
+			    rows:6,
+			    //默认值填充
+			    idDefault:true,
+			    //分割符号
+			    splitStr:' ',
+			    //头部代码
+			    header:'<div class="mPicker-header">请选择当前所在地</div>',
+			    confirm:function(){
+			        //更新json
+					
+			        
+			    },
+			    cancel:function(){
+			    }
+			});
+			
+			 
+	</script>
+</html>

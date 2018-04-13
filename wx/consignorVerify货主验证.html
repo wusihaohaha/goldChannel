@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+	    <meta charset="utf-8">
+	    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	    <meta name="renderer" content="webkit">
+	    <title>货主验证</title>
+	    <script src="js/flexible_css.debug.js"></script>
+		<script src="js/flexible.debug.js"></script>
+		<link rel="stylesheet" href="css/index.css" />
+		<script src="js/jquery-1.8.2.min.js"></script>
+		<script src="js/layer.js" ></script>
+		<script src="js/index.js" ></script>
+		<style>
+			html,body{
+				background-color: #efefef;
+			}
+		</style>
+	</head>
+	<body>
+		
+		<form id="myForm">
+			<div class="step1">
+				<p style="height: 0.5rem;line-height: 0.5rem;background-color: #eee;padding:0.4rem 0.8rem;color: #666666;">经过实名认证后，才能发布信息</p>
+				<div class="row_sty">
+					<label>真实姓名</label>
+					<input type="text" class="name" id="name" placeholder="输入手机号" />
+				</div>
+				<div class="row_sty iconpic">
+					<label>认证类型</label>
+					<select>
+						<option value="" disabled selected>请选择认证类型</option>
+						<option value="个人">个人</option>
+						<option value="企业">企业</option>
+					</select>
+				</div>
+        		<input type="button" class="btn_sty" id="next"  value="下一步">
+			</div>
+			<div class="step2">
+				<p class="p_sty">请上传证件信息，并提交审核</p>
+				<div class="row_sty iconpic">
+					<label>账号身份</label>
+					<select>
+						<option value="" disabled selected>请选择账号身份</option>
+						<option value="个人">个人</option>
+						<option value="企业">企业</option>
+					</select>
+				</div>
+				<div class="row_sty">
+					<label>身份证号</label>
+					<input type="text" placeholder="输入身份证号" />
+				</div>
+				<input type="button" class="btn_sty"  value="上一步">
+			</div>
+		</form>
+	</body>
+	<script type="text/javascript">
+		 $(function(){
+            var myForm={};
+            (function(myForm){
+
+                myForm.initData={
+                    multiChoose:[],
+                    prevIndex:-1,
+                    currentIndex:0,
+                    nextIndex:1,
+                    indexer:0,
+                    blocks:'#myForm>div',
+                    sep:2// sep number static
+                };
+
+                myForm.build=function(){
+                    myForm.methods.hideBlock(myForm.initData.blocks);
+                    $('#myForm>div>input[type=button][value="上一步"]').on('click',function(){
+                        myForm.methods.showPrev();
+                    });
+                    $('#myForm>div>input[type=button][value="下一步"]').on('click',function(){
+                        var me=$(this);
+                        myForm.methods.showNext(me);
+                    });
+                };
+                
+                $(document).ready(function () {  
+			        //初始化数据
+			        myForm.initData.multiChoose.length=0;
+			        myForm.initData.prevIndex=-1;
+			        myForm.initData.currentIndex=0;
+			        myForm.initData.nextIndex=1;
+			        myForm.initData.indexer=0;
+			        myForm.methods.hideBlock(myForm.initData.blocks);
+			        myForm.methods.pushBlock(myForm.initData.blocks);
+			        $('#myForm>.'+myForm.initData.multiChoose[0]).css('display','block');
+			    });  
+
+                myForm.methods=(function(){
+                    return {
+                        pushBlock:function(el){
+                            var chooses=$(el);
+                            for(var i=0;i<chooses.length;i++){
+                                myForm.initData.multiChoose.push($(chooses[i]).attr('class'));
+                            }
+                            console.log(myForm.initData.multiChoose);
+                        },
+                        hideBlock:function(el){
+                            $(el).each(function(){
+                                $(this).css('display','none');
+                            })
+                        },
+                        showNext:function(me){
+                            if( me.attr('name')=='chooseToShowBtn' && me.attr('value')=='Next' ){
+                                // chooses
+                                myForm.methods.initChoose();
+                            }
+                            if(!myForm.initData.multiChoose[myForm.initData.nextIndex]){
+                                console.log('no next');
+                                return;
+                            }
+                            $('#myForm>.'+myForm.initData.multiChoose[myForm.initData.currentIndex]).css('display','none');
+                            $('#myForm>.'+myForm.initData.multiChoose[myForm.initData.nextIndex]).css('display','block');
+                            myForm.initData.prevIndex=myForm.initData.currentIndex;
+                            myForm.initData.currentIndex=myForm.initData.nextIndex;
+                            myForm.initData.nextIndex=myForm.initData.nextIndex+1;
+                        },
+                        showPrev:function(){
+                            if(!myForm.initData.multiChoose[myForm.initData.prevIndex]){
+                                console.log('no prev');
+                                return;
+                            }
+                            $('#myForm>.'+myForm.initData.multiChoose[myForm.initData.currentIndex]).css('display','none');
+                            $('#myForm>.'+myForm.initData.multiChoose[myForm.initData.prevIndex]).css('display','block');
+                            myForm.initData.nextIndex=myForm.initData.currentIndex;
+                            myForm.initData.currentIndex=myForm.initData.prevIndex;
+                            myForm.initData.prevIndex=myForm.initData.prevIndex-1;
+                        },
+                        initChoose:function(){
+                            var chs=$('#myForm>div>input[type=checkbox][name=chooseToShow]');
+                            var chooseArr=[];
+                            for(var i=0;i<chs.length;i++){
+                                console.log(i);
+                                if(chs[i].checked){
+                                    chooseArr.push(chs[i].value);
+                                }
+                            }
+                            myForm.methods.mergeArray(chooseArr);
+                        },
+                        mergeArray:function(chooseArr){
+                            var tempArr=[];
+                            for(var i=0;i<myForm.initData.sep;i++){
+                                tempArr.push(myForm.initData.multiChoose[i]);
+                            }
+                            for(var i=0;i<chooseArr.length;i++){
+                                tempArr.push(chooseArr[i]);
+                            }
+                            myForm.initData.multiChoose.length=0;
+                            myForm.initData.multiChoose=tempArr;
+                        }
+                    }
+                })();
+
+            })(myForm);
+
+            myForm.build();
+
+        });
+	</script>
+</html>

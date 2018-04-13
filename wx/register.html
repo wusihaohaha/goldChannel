@@ -1,0 +1,156 @@
+﻿<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+	    <meta charset="utf-8">
+	    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	    <meta name="renderer" content="webkit">
+	    <title>注册</title>
+	    <script src="js/flexible_css.debug.js"></script>
+		<script src="js/flexible.debug.js"></script>
+		<link rel="stylesheet" href="css/index.css" />
+		<script src="js/jquery-1.8.2.min.js"></script>
+		<script src="js/layer.js" ></script>
+		<script src="js/index.js" ></script>
+	
+	</head>
+	<body>
+		<div class="bind_reg">
+			<p style="font-size: 18px;font-weight: 900;text-align: center;">只需10秒快速注册黄金水道网</p>
+			<p style="height: 1rem;line-height: 1rem;background-color: #eee;">请选择你的身份，之后无法更改</p>
+			<div class="identity" style="overflow:hidden;">
+				<label for="shipowner">
+					<i>&nbsp;我是船主</i>
+			        <input type="radio" name="check" id="shipowner" value="1" checked="checked" />
+			        <span></span>
+			    </label>
+			    <label for="consignor">
+			    	<i>&nbsp;我是货主</i>
+			        <input type="radio" name="check" id="consignor" value="0"/>
+			        <span></span>
+			    </label>
+			</div>
+			<p style="height: 1rem;line-height: 1rem;background-color: #eee;">填写手机号码，验证手机号</p>
+			<div class="row_sty">
+				<label class="tele">手机号码</label>
+				<input type="tel" class="tel" id="tel" placeholder="输入手机号" />
+			</div>
+			<div class="row_sty verifyCode">
+				<input type="tel" placeholder="请输入验证码" id="code"/><button type="button" onclick="getCode();">获取短信验证码</button>
+			</div>
+			<button type="button" class="btn_sty" id="regBtn">提交注册</button>
+			<input type="hidden" id="url"/>
+		</div>
+	</body>
+	<script>
+		
+		$(function(){
+		//function getUrlParam(name) {  
+		//   var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象  
+		//   var r = window.location.search.substr(1).match(reg);  //匹配目标参数  
+		//   if (r != null) return unescape(r[2]); return null; //返回参数值  
+		//}
+		    var url = getUrlParam("state");
+			$('#url').val(url);
+			console.log('url='+$('#url').val());
+			var userInfo = JSON.parse(localStorage.getItem('userInfo'));
+			var isLogin = localStorage.getItem('isLogin');
+			if(userInfo){
+				console.log('userInfo='+JSON.stringify(userInfo));
+				if(isLogin=="1"){
+					window.location.href = $('#url').val();
+				}else{
+					console.log("还没登录 isLogin="+isLogin);
+				}
+				
+			}else{
+				$.ajax({
+					type: 'get',
+					url: 'http://m.hjsdwl.com/goldChannelWX/wx/getWxUserInfoRedirect?code='+getUrlParam("code")+'&state='+getUrlParam("state"),
+					dataType: 'json',
+					success: function(data){
+						var result = '';
+						if(data){
+							console.log('data='+data);
+							localStorage.setItem('userInfo',JSON.stringify(data));
+							localStorage.setItem('isLogin','0');
+							localStorage.setItem('openid',data.openid);
+						}
+
+						// 延迟0.5秒加载
+						setTimeout(function(){
+							$('.mymsg').html(result);
+							// 每次数据加载完，必须重置
+						},500);
+					},
+					error: function(xhr, type){
+					
+					}
+				});
+			}
+			// dropload
+				
+		});
+		
+		function getCode(){
+			var telephone = $('#tel').val();
+			$.ajax({
+				type: 'get',
+				url: 'http://m.hjsdwl.com/goldChannelWX/obtainvalidate?telephone='+telephone,
+				dataType: 'json',
+				success: function(data){
+				console.log(data)
+					var result = '';
+					if(data.suc=='y'){
+						alert('验证码发送成功');
+					}else{
+						alert('验证码发送失败');
+					}
+
+				},
+				error: function(xhr, type){
+					alert('验证码发送失败');
+				}
+			});
+			
+		}
+		
+		$('#regBtn').click(function(){
+			var telephone = $('#tel').val();
+			var type = $('input:radio:checked').val();
+			var openid = localStorage.getItem('openid')?localStorage.getItem('openid'):JSON.parse(localStorage.getItem('userInfo')).openid;
+			var code = $('#code').val();
+			$.ajax({
+				type: 'get',
+				url: 'http://m.hjsdwl.com/goldChannelWX/register?telephone='+telephone+'&type='+type+'&openid='+openid+'&code='+code,
+				dataType: 'json',
+				success: function(data){
+					var result = '';
+					if(data.suc=='y'){
+						localStorage.setItem('isLogin','1');
+						localStorage.setItem('renzheng','0');
+						localStorage.setItem('type',data.type);
+						localStorage.setItem('phone',data.phone);
+						var url = data.type=='0'?'consignorVerify.html':'my.html';
+						alert('注册成功,正在前往验证');
+						// 延迟0.5秒加载
+						setTimeout(function(){
+							window.location.href = url;
+							// 每次数据加载完，必须重置
+						},500);
+
+					}else{
+						alert(data.msg);
+					}
+
+				},
+				error: function(xhr, type){
+					alert('注册失败');
+				}
+			});
+		
+		})
+		
+</script>
+	
+</html>

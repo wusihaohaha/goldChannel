@@ -1,0 +1,471 @@
+*{margin: 0;padding: 0;font-size: 16px;}
+body,ul,li {
+	padding:0;
+	margin:0;
+	border:0;
+}
+html,body{
+	background-color: #efefef;
+}
+body {
+	-webkit-user-select:none;
+    -webkit-text-size-adjust:none;
+	font-family:helvetica;
+}
+a:link{text-decoration:none; }  /* 指正常的未被访问过的链接*/
+
+a:visited{text-decoration:none; }/*指已经访问过的链接*/
+
+a:hover{text-decoration:none;}/*指鼠标在链接*/}
+
+a:active{text-decoration:none;}/* 指正在点的链接*/ 
+
+input{
+	border: 0;
+}
+.ymbtm{
+	margin-bottom: 1.5rem;
+}
+.flowpig img{
+	max-width: 100%;
+}
+.row_sty{
+	position: relative;
+	height: 1.6rem;
+	line-height: 1.6rem;
+	padding-right: 0.1rem;
+	background-color: #fff!important;
+}
+.row_sty label{
+	float: left;
+	width: 3.5rem;
+	height: 1.6rem;
+	line-height: 1.6rem;
+	padding-left:0.5rem;
+}
+.row_sty label~input,.row_sty label~span,.row_sty label~select{
+	float: right;
+	/*width: 6rem;*/
+	width: 5rem;
+	height: 1.6rem;
+	line-height: 1.6rem;
+	padding-right:0.6rem;
+	text-align: right;
+}
+
+
+.row_sty label img{
+	width: 0.6rem;
+	height: 0.6rem;
+	vertical-align:middle;
+	margin-right: 0.1rem;
+}
+
+
+.row_sty input{
+	border:0;
+	background-color: #fff;
+}
+.row_sty:after{
+	position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 1px;
+    content: '';
+    -webkit-transform: scaleY(.5);
+    transform: scaleY(.5);
+    background-color: #efefef;
+}
+.row_after:after{
+	height: 0;
+}
+
+.liststy .row_sty label~select,.liststy .row_sty label~input,.liststy .row_sty label~span{
+	float: left;
+	padding-right: 0rem;
+	margin-left: 0.2rem;
+	text-align: left;
+}
+
+.verifyCode input{
+	width: 48%;
+	height: 1.6rem;
+	line-height: 1.6rem;
+	padding-left: 1rem;
+}
+.verifyCode input~button{
+	float: right;
+	border: 0;
+	border-radius: 4px;
+	font-size: 14px;
+	width: 3.5rem;
+	height: 1rem;
+	margin:0.3rem;
+	padding:0 4px;
+	background-color: #7fa9ff;
+	color: #fff;
+}
+.bind_reg p,.p_sty{
+	padding:0.4rem 0.8rem;
+	color: #666666;
+}
+
+.p_title{
+	border-bottom: 1px solid #efefef;
+	padding:0.2rem 0 0.2rem 0.4rem;
+	font-size: 16px;
+	background-color: #efefef;
+}
+.centersty{
+	text-align: center;
+}	
+
+.btn_sty{
+	display: block;
+	width:8.4rem;
+	height: 1.2rem;
+	margin: 1rem auto;
+	border: 0;
+	background-color:#FF8C00;
+	color: #fff;
+}
+.identity{
+	background-color: #fff;
+}
+.row_sty label.tele{
+	margin-left: 0.5rem;
+}
+.row_sty label~input.tel{
+	float:left;
+	width: 4rem;
+	text-align: left;
+	margin-left: 0.5rem;
+}
+/**radio美化样式**/
+.identity label{display:block;position:relative;width:10rem;height:1rem;margin: 0.2rem 0;}
+.identity input{display:none;}
+.identity i{display: inline-block;position:absolute;top:50%;margin-top:-0.3rem;margin-left:0.9rem;width: 3rem;height:0.6rem;line-height:0.6rem;font-style: normal;}
+.identity i img{vertical-align: middle;margin-left: 0.6rem;max-width: 100%;max-height: 100%;}
+.identity span{border:0.03rem solid #c6c7c7;display:inline-block;width:20px;height:20px;border-radius:50%;position:relative;top:0.2rem;left:8.5rem;transition:.3s;-webkit-transition:.3s;}
+.identity span:before{background:#fff;width:0;height:2px;position:absolute;top:10px;left:5px;content:'';transform:rotate(45deg);-webkit-transform:rotate(45deg);-webkit-transform-origin:left top;transform-origin:left top;}
+.identity span:after{background:#fff;width:0;height:2px;position:absolute;top:16px;left:8px;content:'';transform:rotate(-60deg);-webkit-transform:rotate(-60deg);-webkit-transform-origin:left top;transform-origin:left top;}
+.identity input:checked~span{background-color: #51bb11;border-color: #51bb11;}
+.identity input:checked~span:before{animation:move1 .3s forwards;-webkit-animation:move1 .3s forwards;}
+.identity input:checked~span:after{animation:move2 .3s forwards;-webkit-animation:move2 .3s forwards;}
+@keyframes move1{
+    0%{
+        width:0;
+    }
+    100%{
+        width:7px;
+    }
+}        
+@-webkit-keyframes move1{
+    0%{
+        width:0;
+    }
+    100%{
+        width:7px;
+    }
+}
+@keyframes move2{
+    0%{
+        width:0;
+    }
+    60%{
+        width:0;
+    }
+    100%{
+        width:15px;
+    }
+}        
+@-webkit-keyframes move2{
+    0%{
+        width:0;
+    }
+    60%{
+        width:0;
+    }
+    100%{
+        width:15px;
+    }
+}
+
+/*我的船舶*/
+.list_ul li{
+	width: 10rem;
+	height: 4rem;
+	margin: 0.3rem auto 0;
+	background-color: #fff;
+}
+.list_ul li dl dt,.list_ul li dl dd{
+	margin-left: 0.5rem;
+	height: 1rem;
+	line-height: 1rem;
+}
+.list_ul li dl dt{
+	font-weight: 700;
+}
+.list_ul li dl dt span{
+	float: right;
+	margin-right: 0.5rem;
+	font-weight: 500;
+	color: #616161;
+}
+.list_ul li dl dd:last-child img{
+	width: 0.8rem;
+	height: 0.8rem;
+	vertical-align: middle;
+}
+
+/**船舶、货物详情**/
+.details_header{
+	width: 10rem;
+	height: 3rem;
+	border-bottom: 1px solid #efefef;
+	background-color: #fff;
+}
+.details_header dt{
+	float: left;
+	width: 2.5rem;
+	height: 2.5rem;
+}
+.details_header dd{
+	float: left;
+	width:7.5rem ;
+	height: 1rem;
+	line-height: 1rem;
+	margin-top: 0.25rem;
+}
+.details_header dd:last-child{
+	font-size: 12px;
+}
+.details_header dt img{
+	width: 1.5rem;
+	height:1.5rem;
+	margin: 0.5rem;
+}
+.details_header dd img{
+	width:0.6rem ;
+	height: 0.6rem;
+	vertical-align: middle;
+}
+.rows{margin-top: 0.3rem;background-color: #fff;}
+.rightpos{text-align: right;}
+.iconpic{
+	background: url(../images/right.png) left center no-repeat ;
+	background-size: 0.8rem;
+	background-position-x: 9.3rem;
+}
+.iconpic span{color: #616161;}
+
+
+
+/*orderInfo找船*/
+.orderInfo{
+	z-index: 9990;
+	position: fixed;
+	top: 0;
+	left: 0;
+	background:#fff url(../images/gg.svg) left top no-repeat; 
+	border-bottom: 1px solid #efefef;
+	background-size: 1rem;
+	width: 10rem;
+	height: 2rem;
+}
+.orderInfo marquee{
+	margin-left: 1rem;
+	width: 9rem;
+	height: 1rem;
+	line-height: 1rem;
+	background-color: #fff;
+	color:#616161;
+}
+.orderInfo marquee span{
+	color: #e30;
+}
+
+.filter_sty{
+	display: flex;
+	width: 10rem;
+	height: 1rem;
+}
+.filter_sty li{
+	flex:1;
+    text-align:center;
+	height: 1rem;
+	line-height: 1rem;
+	/*background: url(../images/xiala.png) no-repeat scroll right 0.15rem;
+	background-size: 0.6rem;*/
+	border-top: 1px solid #efefef;
+	
+}
+.filter_sty li input{
+	width: 2.3rem;
+	border: 0;
+	text-align: center;
+	color: #616161;
+}
+.filter_sty li img{
+	width:0.7rem;
+	height: 0.7rem;
+	vertical-align: middle;
+}
+
+/**绑定成功页面样式**/
+.bindok{
+	padding-top: 3rem;
+	text-align: center;
+	font-size: 16px;
+}
+.bindok .p1{
+	margin-top: 0.5rem;
+	font-size: 22px;
+}
+
+/**select美化样式**/
+select {
+  /*Chrome和Firefox里面的边框是不一样的，所以复写了一下*/
+  border: none;
+  /*很关键：将默认的select选择框样式清除*/
+  appearance:none;
+  -moz-appearance:none;
+  -webkit-appearance:none;
+  background: none;
+   color: #616161;
+  /*在选择框的最右侧中间显示小箭头图片*/
+/*  background: url("") no-repeat scroll right center transparent;*/
+  /*为下拉小箭头留出一点位置，避免被文字覆盖*/
+  /*padding-right: 14px;*/
+}
+
+/*清除ie的默认选择框样式清除，隐藏下拉箭头*/
+select::-ms-expand { display: none; }
+.myhead{
+	width: 10rem;
+	height:2.5rem;
+	background-color: #fff;
+	margin-top: 0.3rem;
+}
+.myhead dt{
+	float: left;
+	display:block;
+	width: 3rem;
+	height:2.5rem;
+	text-align: center;
+}
+.myhead dt img{
+	width: 2rem;
+	height: 2rem;
+}
+.myhead dd{
+	float: left;
+	width: 6rem;
+	height:0.8rem;
+	line-height: 0.8rem;
+	margin-top: 0.2rem;
+}
+.my_p{
+	width: 10rem;
+	height: 3rem;
+}
+.my_p p{
+	text-align: center;
+	height: 0.8rem;
+	line-height: 0.8rem;
+	color: #616161;
+}
+.my_p p:first-child{
+	margin-top: 0.6rem;
+}
+
+/*底部导航样式*/
+.footsty{
+	display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    position: fixed;
+    z-index: 555;
+    bottom: 0;
+    width: 10rem;
+    height: 1.5rem;
+    background-color: #f7f7fa;
+    
+}
+.footsty .footimg{
+	display: inline-block;
+    width: 0.7rem;
+    height: 0.7rem;
+}
+.footsty .footimg img{
+	width: 100%;
+	height: 100%;
+}
+.footsty .foot_a{
+	display: block;
+    -webkit-box-flex: 1;
+    -webkit-flex: 1;
+    flex: 1;
+    padding: 5px 0 0;
+    font-size: 0;
+    color: #999;
+    text-align: center;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+}
+.footsty .foot_a p{
+	font-size: 14px;
+}
+
+
+/**认证页面**/
+.step1 .row_sty input,.step1 .row_sty select,.step2 .row_sty input,.step2 .row_sty select{
+	float: left;
+	text-align: left;
+}
+
+.uploadsty{
+    width:9.5rem;
+    height:2.6rem;
+    padding-left: 0.5rem;
+    background-color: #fff;
+}
+.uploadsty img{
+	width:2.6rem;
+    height:100%;
+    border:none;
+}
+.filesty{
+	width:2.6rem;
+    height:2.6rem;
+    opacity:0;
+    position:absolute;
+    z-index: 100;
+}
+
+
+
+/**a**/
+.row_sty span a{
+	color: #616161;
+}
+
+/*添加船舶图片上传按钮样式*/
+.picupload_ul{
+	width: 10rem;
+	
+}
+.picupload_ul li{
+	float: left;
+	width: 5rem;
+	height: 3.5rem;
+	margin-top: 0.2rem;
+	text-align: center;
+}
+.picupload_ul li:last-child{
+	margin-bottom: 0.8rem;
+}
+.uploadsty2{
+	width: 5rem;
+	padding: 0;
+}
